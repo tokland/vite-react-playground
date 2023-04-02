@@ -12,6 +12,13 @@ export default ({ mode }) => {
 
         server: {
             port: parseInt(env.VITE_PORT),
+            proxy: {
+                "/api": {
+                    target: "https://jsonplaceholder.typicode.com",
+                    changeOrigin: true,
+                    rewrite: path => path.replace(/^\/api/, ""),
+                },
+            },
         },
     });
 };
