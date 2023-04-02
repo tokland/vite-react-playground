@@ -7,12 +7,14 @@
         "dev": "vite",
         "start": "vite",
         "lint": "eslint src",
+        "test": "vitest",
         "build": "tsc && vite build",
         "preview": "vite preview"
     },
     "dependencies": {
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "real-cancellable-promise": "^1.1.2",
         "type-route": "^1.0.1"
     },
     "devDependencies": {
