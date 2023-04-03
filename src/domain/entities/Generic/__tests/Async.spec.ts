@@ -1,5 +1,4 @@
 import { describe, expect, test, it, vi } from "vitest";
-
 import { Async, AsyncCancel, AsyncError } from "../Async";
 
 describe("Basic builders", () => {
@@ -47,8 +46,8 @@ describe("toPromise", () => {
 });
 
 describe("helpers", () => {
-    test("Async.delay", async () => {
-        expect(Async.delay(1).toPromise()).resolves.toEqual(1);
+    test("Async.sleep", async () => {
+        expect(Async.sleep(1).toPromise()).resolves.toEqual(undefined);
     });
 
     test("Async.void", async () => {
@@ -146,9 +145,9 @@ describe("cancel", () => {
         const success = vi.fn();
         const reject = vi.fn();
 
-        const cancel = Async.delay(1).run(success, reject);
+        const cancel = Async.sleep(1).run(success, reject);
         cancel();
-        await new Promise(resolve => setTimeout(resolve, 10));
+        await nextTick();
 
         expect(success).not.toHaveBeenCalled();
         expect(reject).toHaveBeenCalledTimes(1);

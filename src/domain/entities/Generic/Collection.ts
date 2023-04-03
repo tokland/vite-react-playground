@@ -1,4 +1,5 @@
 import { HashMap } from "./HashMap";
+import { Hasher, IndexedSet } from "./IndexedSet";
 
 export default function _c<T>(xs: T[]): Collection<T> {
     return Collection.from(xs);
@@ -143,7 +144,7 @@ export class Collection<T> {
         return _c(
             this.xs
                 .slice(0, this.xs.length - n + 1)
-                .map((_x, idx) => [this.xs[idx], this.xs[idx + 1]] as [T, T])
+                .map((_x, idx) => [this.xs[idx], this.xs[idx + 1]] as [T, T]),
         );
     }
 
@@ -200,7 +201,7 @@ export class Collection<T> {
             }
         }
 
-        return Collection.from(output);
+        return _c(output);
     }
 
     reduce<U>(mapper: (acc: U, value: T) => U, initialAcc: U): U {
@@ -209,20 +210,20 @@ export class Collection<T> {
 
     chunk(size: number): Collection<T[]> {
         return Collection.range(0, this.xs.length, size).map(index =>
-            this.xs.slice(index, index + size)
+            this.xs.slice(index, index + size),
         );
     }
 
-    cartesian<U>(): T extends Array<U> ? Collection<U[]> : never {
-        const [ys, ...zss] = this.xs as unknown as Array<U[]>;
+    cartesian(): T extends Array<infer U> ? Collection<U[]> : never {
+        const [ys, ...zss] = this.xs;
 
         if (!ys) {
             return _c([[]]) as any;
         } else {
-            return _c(ys).flatMap(x =>
+            return _c(ys as T[]).flatMap(x =>
                 _c(zss)
                     .cartesian()
-                    .map(zs => [x, ...zs])
+                    .map(zs => [x, ...zs]),
             ) as any;
         }
     }
@@ -284,15 +285,11 @@ export class Collection<T> {
         const pairs = this.map(toPairFn).toArray();
         return HashMap.fromPairs(pairs);
     }
-}
 
-/*
-export class FlattenableCollection<T extends U[], U> extends Collection<T> {
-    flatten_(): Collection<U> {
-        return _c(this.xs.flat());
+    toIndexedSet(getHash: Hasher<T>): IndexedSet<T> {
+        return IndexedSet.fromArray(this.xs, getHash);
     }
 }
-*/
 
 type CompareRes = -1 | 0 | 1;
 
@@ -314,4 +311,4 @@ function compareArray<T>(a: T, b: T, items: OrderItem<T>[]): CompareRes {
     return res !== 0 ? res : compareArray(a, b, items.slice(1));
 }
 
-type OrderItem<T> = [(o: T) => unknown, "asc" | "desc"];
+type OrderItem<T> = [(obj: T) => unknown, "asc" | "desc"];

@@ -4,16 +4,6 @@ import {
     Cancellation,
 } from "real-cancellable-promise";
 
-export class AsyncError extends Error {
-    type = "asyncError";
-}
-
-export class AsyncCancel extends Error {
-    type = "asyncCancel";
-}
-
-type Cancel = () => void;
-
 export class Async<T> {
     private constructor(private _promise: () => CancellablePromise<T>) {}
 
@@ -60,14 +50,16 @@ export class Async<T> {
         return new Async(() => this._promise().then(data => fn(data)._promise()));
     }
 
-    chain = this.flatMap;
+    chain<U>(fn: (data: T) => Async<U>): Async<U> {
+        return this.flatMap(fn);
+    }
 
     toPromise(): Promise<T> {
         return this._promise();
     }
 
-    static delay(ms: number): Async<number> {
-        return new Async(() => CancellablePromise.delay(ms)).map(() => ms);
+    static sleep(ms: number): Async<void> {
+        return new Async(() => CancellablePromise.delay(ms)).map(() => undefined);
     }
 
     static void(): Async<void> {
@@ -89,6 +81,16 @@ export class Async<T> {
         });
     }
 }
+
+export class AsyncError extends Error {
+    type = "asyncError";
+}
+
+export class AsyncCancel extends Error {
+    type = "asyncCancel";
+}
+
+type Cancel = () => void;
 
 function buildError(message: string): AsyncError {
     return new AsyncError(message);
