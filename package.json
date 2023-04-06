@@ -7,7 +7,8 @@
         "dev": "vite",
         "start": "vite",
         "lint": "eslint src",
-        "test": "vitest",
+        "test": "vitest run",
+        "test-watch": "vitest watch",
         "build": "tsc && vite build",
         "preview": "vite preview"
     },
@@ -19,6 +20,8 @@
         "type-route": "^1.0.1"
     },
     "devDependencies": {
+        "@testing-library/jest-dom": "^5.16.5",
+        "@testing-library/react": "^14.0.0",
         "@types/node": "^18.15.11",
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
@@ -27,6 +30,7 @@
         "eslint-config-react-app": "^7.0.1",
         "eslint-plugin-unused-imports": "^2.0.0",
         "expect-type": "^0.15.0",
+        "jsdom": "^21.1.1",
         "prettier": "^2.8.7",
         "typescript": "^4.9.3",
         "vite": "^4.2.0",

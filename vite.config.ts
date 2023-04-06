@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import { defineConfig, loadEnv } from "vite";
 import eslint from "vite-plugin-eslint";
 import react from "@vitejs/plugin-react";
@@ -9,7 +10,7 @@ export default ({ mode }) => {
 
     return defineConfig({
         plugins: [react(), eslint()],
-
+        test: { environment: "jsdom", setupFiles: "./src/tests/setup.js" },
         server: {
             port: parseInt(env.VITE_PORT),
             proxy: {
