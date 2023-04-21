@@ -7,6 +7,7 @@
         "dev": "vite",
         "start": "vite",
         "lint": "eslint src",
+        "lint-prune": "ts-prune --error",
         "test": "vitest run",
         "test-watch": "vitest watch",
         "test-integration": "npx playwright test --reporter=list",
@@ -18,7 +19,8 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "real-cancellable-promise": "^1.1.2",
-        "type-route": "^1.0.1"
+        "type-route": "^1.0.1",
+        "zustand": "^4.3.7"
     },
     "devDependencies": {
         "@playwright/test": "^1.32.2",
@@ -35,6 +37,7 @@
         "jsdom": "^21.1.1",
         "playwright": "^1.32.2",
         "prettier": "^2.8.7",
+        "ts-prune": "^0.10.3",
         "typescript": "^4.9.3",
         "vite": "^4.2.0",
         "vite-plugin-eslint": "^1.8.1",

@@ -1,22 +1,23 @@
-import { useState } from "react";
 import { Route } from "type-route";
 import { routes } from "./router";
+import { useCounterStore } from "./CounterStore";
 
 interface CounterPageProps {
     route: Route<typeof routes.counter>;
 }
 
 function Counter(props: CounterPageProps) {
-    const [count, setCount] = useState(0);
+    const actions = useCounterStore(state => state.actions);
+    const value = useCounterStore(state => state.value);
     const { route } = props;
 
     return (
         <div className="App">
             <div className="card">
                 ID={route.params.id}
-                <button onClick={() => setCount(count => count - 1)}>DEC</button>
-                <button onClick={() => setCount(count => count + 1)}>INC</button>
-                {count}
+                <button onClick={() => actions.add(-1)}>DEC</button>
+                <button onClick={() => actions.add(+1)}>INC</button>
+                {value}
             </div>
         </div>
     );
