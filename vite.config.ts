@@ -10,7 +10,11 @@ export default ({ mode }) => {
 
     return defineConfig({
         plugins: [react(), eslint()],
-        test: { environment: "jsdom", setupFiles: "./src/tests/setup.js" },
+        test: {
+            environment: "jsdom",
+            setupFiles: "./src/tests/setup.js",
+            exclude: ["node_modules", "src/tests/playwright"],
+        },
         server: {
             port: parseInt(env.VITE_PORT),
             proxy: {

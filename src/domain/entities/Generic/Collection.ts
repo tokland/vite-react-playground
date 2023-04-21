@@ -209,9 +209,9 @@ export class Collection<T> {
     }
 
     chunk(size: number): Collection<T[]> {
-        return Collection.range(0, this.xs.length, size).map(index =>
-            this.xs.slice(index, index + size),
-        );
+        return Collection.range(0, this.xs.length, size).map(index => {
+            return this.xs.slice(index, index + size);
+        });
     }
 
     cartesian(): T extends Array<infer U> ? Collection<U[]> : never {
@@ -286,8 +286,11 @@ export class Collection<T> {
         return HashMap.fromPairs(pairs);
     }
 
-    toIndexedSet(getHash: Hasher<T>): IndexedSet<T> {
-        return IndexedSet.fromArray(this.xs, getHash);
+    toIndexedSet<THash, T2 extends THash>(
+        mapper: (value: T) => T2,
+        getHash: Hasher<THash>,
+    ): IndexedSet<T2, THash> {
+        return IndexedSet.fromArray<T2, THash>(this.xs.map(mapper), getHash);
     }
 }
 

@@ -1,6 +1,18 @@
 import { describe, expect, test } from "vitest";
 import { IndexedSet } from "../IndexedSet";
 
+type Obj = { id: string; name: string };
+
+function getId(obj: { id: string }): string {
+    return obj.id;
+}
+
+const objs = {
+    mary: { id: "mary", name: "Mary" },
+    john: { id: "john", name: "John" },
+    zelda: { id: "zelda", name: "Zelda" },
+} satisfies Record<string, Obj>;
+
 describe("constructors", () => {
     test("empty", () => {
         const set = IndexedSet.empty(getId);
@@ -18,12 +30,12 @@ describe("operations", () => {
     const set = IndexedSet.empty(getId).add(objs.mary).add(objs.john);
 
     test("get non-existing key", () => {
-        expect(set.get("some-non-existing-key")).toBeUndefined();
+        expect(set.get({ id: "some-non-existing-id" })).toBeUndefined();
     });
 
     test("get existing key", () => {
-        expect(set.get("m1")).toBe(objs.mary);
-        expect(set.get("j1")).toBe(objs.john);
+        expect(set.get({ id: "mary" })).toBe(objs.mary);
+        expect(set.get({ id: "john" })).toBe(objs.john);
     });
 
     test("equals", () => {
@@ -43,15 +55,3 @@ describe("operations", () => {
         expect(array).toEqual(expect.arrayContaining([objs.john, objs.mary]));
     });
 });
-
-type Obj = { id: string; name: string };
-
-function getId(obj: Obj): string {
-    return obj.id;
-}
-
-const objs = {
-    mary: { id: "m1", name: "Mary" },
-    john: { id: "j1", name: "John" },
-    zelda: { id: "z1", name: "Zelda" },
-} satisfies Record<string, Obj>;

@@ -4,20 +4,21 @@ type Hash = string | number | symbol;
 
 export type Hasher<T> = (value: T) => Hash;
 
-export class IndexedSet<T> {
-    private constructor(private hashMap: RimbuHashMap<Hash, T>, private getKey: Hasher<T>) {}
+export class IndexedSet<T extends THash, THash> {
+    private constructor(private hashMap: RimbuHashMap<Hash, T>, private getKey: Hasher<THash>) {}
 
-    get(hash: Hash): T | undefined {
-        return this.hashMap.get(hash);
+    get<TH extends THash>(value: TH): T | undefined {
+        const key = this.getKey(value);
+        return this.hashMap.get(key);
     }
 
-    add(value: T): IndexedSet<T> {
+    add(value: T): IndexedSet<T, THash> {
         const key = this.getKey(value);
         const updated = this.hashMap.set(key, value);
         return new IndexedSet(updated, this.getKey);
     }
 
-    equals(set: IndexedSet<T>): boolean {
+    equals(set: IndexedSet<T, THash>): boolean {
         return this.size === set.size && mapsHaveSameValues(this.hashMap, set.hashMap);
     }
 
@@ -29,11 +30,14 @@ export class IndexedSet<T> {
         return this.hashMap.size;
     }
 
-    static empty<T>(getHash: Hasher<T>): IndexedSet<T> {
+    static empty<T extends T0, T0>(getHash: Hasher<T0>): IndexedSet<T, T0> {
         return new IndexedSet(RimbuHashMap.empty(), getHash);
     }
 
-    static fromArray<T>(values: T[], getHash: Hasher<T>): IndexedSet<T> {
+    static fromArray<T extends THash, THash>(
+        values: T[],
+        getHash: Hasher<THash>,
+    ): IndexedSet<T, THash> {
         const hashMap = RimbuHashMap.from(values.map(value => [getHash(value), value] as const));
         return new IndexedSet(hashMap, getHash);
     }

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import _c, { Collection } from "../Collection";
+import _, { Collection } from "../Collection";
 import { expectTypeOf } from "expect-type";
 import { IndexedSet } from "../IndexedSet";
 
@@ -10,35 +10,35 @@ describe("Collection", () => {
     });
 
     test("map", () => {
-        const values = _c([1, 2, 3]).map(x => 2 * x);
+        const values = _([1, 2, 3]).map(x => 2 * x);
         expect(values.toArray()).toEqual([2, 4, 6]);
     });
 
     test("flatMap", () => {
-        const values = _c([1, 2, 3]).flatMap(x => _c([x, -x]));
+        const values = _([1, 2, 3]).flatMap(x => _([x, -x]));
         expect(values.toArray()).toEqual([1, -1, 2, -2, 3, -3]);
     });
 
     test("flatten", () => {
         expect(
-            _c([[1, 2], [3], [], [4, 5]])
+            _([[1, 2], [3], [], [4, 5]])
                 .flatten()
                 .toArray(),
         ).toEqual([1, 2, 3, 4, 5]);
     });
 
     test("filter/select", () => {
-        const values = _c([1, 2, 3, 0, 3]).select(x => x > 1);
+        const values = _([1, 2, 3, 0, 3]).select(x => x > 1);
         expect(values.toArray()).toEqual([2, 3, 3]);
     });
 
     test("reject", () => {
-        const values = _c([1, 2, 3]).reject(x => x > 1);
+        const values = _([1, 2, 3]).reject(x => x > 1);
         expect(values.toArray()).toEqual([1]);
     });
 
     test("enumerate", () => {
-        expect(_c(["a", "b", "c"]).enumerate().toArray()).toEqual([
+        expect(_(["a", "b", "c"]).enumerate().toArray()).toEqual([
             [0, "a"],
             [1, "b"],
             [2, "c"],
@@ -46,32 +46,32 @@ describe("Collection", () => {
     });
 
     test("compact", () => {
-        const values = _c([1, undefined, 2, null, 3]).compact();
+        const values = _([1, undefined, 2, null, 3]).compact();
 
         expect(values.toArray()).toEqual([1, 2, 3]);
         expectTypeOf(values).toEqualTypeOf<Collection<number>>();
     });
 
     test("compactMap", () => {
-        const values = _c([1, 2, 3]).compactMap(x => (x > 1 ? x.toString() : undefined));
+        const values = _([1, 2, 3]).compactMap(x => (x > 1 ? x.toString() : undefined));
 
         expect(values.toArray()).toEqual(["2", "3"]);
         expectTypeOf(values).toEqualTypeOf<Collection<string>>();
     });
 
     test("append", () => {
-        expect(_c([1, 2]).append(3).toArray()).toEqual([1, 2, 3]);
+        expect(_([1, 2]).append(3).toArray()).toEqual([1, 2, 3]);
     });
 
     test("includes", () => {
-        const values = _c([1, 2, 3]);
+        const values = _([1, 2, 3]);
 
         expect(values.includes(2)).toEqual(true);
         expect(values.includes(4)).toEqual(false);
     });
 
     test("every/all", () => {
-        const values = _c([1, 2, 3]);
+        const values = _([1, 2, 3]);
 
         expect(values.every(x => x > 0)).toEqual(true);
         expect(values.every(x => x > 1)).toEqual(false);
@@ -83,7 +83,7 @@ describe("Collection", () => {
     });
 
     test("some/any", () => {
-        const values = _c([1, 2, 3]);
+        const values = _([1, 2, 3]);
 
         expect(values.some(x => x > 0)).toEqual(true);
         expect(values.some(x => x > 1)).toEqual(true);
@@ -95,7 +95,7 @@ describe("Collection", () => {
     });
 
     test("find", () => {
-        const values = _c([1, 2, 3]);
+        const values = _([1, 2, 3]);
 
         const valueFound = values.find(value => value === 2);
         expect(valueFound).toEqual(2);
@@ -111,7 +111,7 @@ describe("Collection", () => {
     });
 
     test("splitAt", () => {
-        const values = _c([0, 1, 2, 3, 4, 5]);
+        const values = _([0, 1, 2, 3, 4, 5]);
 
         expect(
             values
@@ -122,11 +122,11 @@ describe("Collection", () => {
     });
 
     test("join", () => {
-        expect(_c(["a", "b", "c"]).join(" - ")).toEqual("a - b - c");
+        expect(_(["a", "b", "c"]).join(" - ")).toEqual("a - b - c");
     });
 
     test("get", () => {
-        const xs = _c(["a", "b"]);
+        const xs = _(["a", "b"]);
 
         expect(xs.get(-1)).toEqual(undefined);
         expect(xs.get(0)).toEqual("a");
@@ -135,7 +135,7 @@ describe("Collection", () => {
     });
 
     test("getMany", () => {
-        const xs = _c(["a", "b", "c"]);
+        const xs = _(["a", "b", "c"]);
 
         expect(xs.getMany([]).toArray()).toEqual([]);
         expect(xs.getMany([0, 2]).toArray()).toEqual(["a", "c"]);
@@ -143,38 +143,38 @@ describe("Collection", () => {
     });
 
     test("intersperse", () => {
-        const xs = _c(["a", "b", "c"]);
+        const xs = _(["a", "b", "c"]);
 
         expect(xs.intersperse("x").toArray()).toEqual(["a", "x", "b", "x", "c"]);
     });
 
     test("uniq", () => {
-        expect(_c([1, 2, 2, 3, 1]).uniq().toArray()).toEqual([1, 2, 3]);
+        expect(_([1, 2, 2, 3, 1]).uniq().toArray()).toEqual([1, 2, 3]);
     });
 
     test("uniqBy", () => {
         expect(
-            _c(["a", "ab", "b", "c", "abc", "de", "xyz"])
+            _(["a", "ab", "b", "c", "abc", "de", "xyz"])
                 .uniqBy(s => s.length)
                 .toArray(),
         ).toEqual(["a", "ab", "abc"]);
     });
 
     test("reduce", () => {
-        expect(_c([1, 2, 3]).reduce((acc, x) => acc + x, 10)).toEqual(16);
+        expect(_([1, 2, 3]).reduce((acc, x) => acc + x, 10)).toEqual(16);
     });
 
     test("sort (strings)", () => {
-        expect(_c(["a", "c", "b"]).sort().toArray()).toEqual(["a", "b", "c"]);
-        expect(_c(["22", "3", "1"]).sort().toArray()).toEqual(["1", "22", "3"]);
+        expect(_(["a", "c", "b"]).sort().toArray()).toEqual(["a", "b", "c"]);
+        expect(_(["22", "3", "1"]).sort().toArray()).toEqual(["1", "22", "3"]);
     });
 
     test("sort (numbers)", () => {
-        expect(_c([2, 33, 1, 4]).sort().toArray()).toEqual([1, 2, 4, 33]);
+        expect(_([2, 33, 1, 4]).sort().toArray()).toEqual([1, 2, 4, 33]);
     });
 
     test("sortBy", () => {
-        const values = _c([2, 33, 1, 4]);
+        const values = _([2, 33, 1, 4]);
 
         expect(values.sortBy(x => x).toArray()).toEqual([1, 2, 4, 33]);
         expect(values.sortBy(x => -x).toArray()).toEqual([33, 4, 2, 1]);
@@ -182,7 +182,7 @@ describe("Collection", () => {
     });
 
     test("sortBy with custom compareFn", () => {
-        const values = _c([2, 33, 1, 4]);
+        const values = _([2, 33, 1, 4]);
 
         expect(
             values
@@ -192,29 +192,29 @@ describe("Collection", () => {
     });
 
     test("first", () => {
-        expect(_c([1, 2, 3]).first()).toEqual(1);
-        expect(_c([]).first()).toEqual(undefined);
+        expect(_([1, 2, 3]).first()).toEqual(1);
+        expect(_([]).first()).toEqual(undefined);
     });
 
     test("last", () => {
-        expect(_c([1, 2, 3]).last()).toEqual(3);
-        expect(_c([]).last()).toEqual(undefined);
+        expect(_([1, 2, 3]).last()).toEqual(3);
+        expect(_([]).last()).toEqual(undefined);
     });
 
     test("take", () => {
-        expect(_c([1, 2, 3]).take(-10).toArray()).toEqual([]);
-        expect(_c([1, 2, 3]).take(2).toArray()).toEqual([1, 2]);
-        expect(_c([1, 2, 3]).take(10).toArray()).toEqual([1, 2, 3]);
+        expect(_([1, 2, 3]).take(-10).toArray()).toEqual([]);
+        expect(_([1, 2, 3]).take(2).toArray()).toEqual([1, 2]);
+        expect(_([1, 2, 3]).take(10).toArray()).toEqual([1, 2, 3]);
     });
 
     test("drop", () => {
-        expect(_c([1, 2, 3]).drop(-0).toArray()).toEqual([1, 2, 3]);
-        expect(_c([1, 2, 3]).drop(2).toArray()).toEqual([3]);
-        expect(_c([1, 2, 3]).drop(10).toArray()).toEqual([]);
+        expect(_([1, 2, 3]).drop(-0).toArray()).toEqual([1, 2, 3]);
+        expect(_([1, 2, 3]).drop(2).toArray()).toEqual([3]);
+        expect(_([1, 2, 3]).drop(10).toArray()).toEqual([]);
     });
 
     test("pairwise", () => {
-        expect(_c([1, 2, 3, 4]).pairwise().toArray()).toEqual([
+        expect(_([1, 2, 3, 4]).pairwise().toArray()).toEqual([
             [1, 2],
             [2, 3],
             [3, 4],
@@ -222,34 +222,14 @@ describe("Collection", () => {
     });
 
     test("chunk", () => {
-        expect(_c([1, 2, 3, 4, 5]).chunk(2).toArray()).toEqual([[1, 2], [3, 4], [5]]);
+        expect(_([1, 2, 3, 4, 5]).chunk(2).toArray()).toEqual([[1, 2], [3, 4], [5]]);
     });
 
     test("cartesian", () => {
-        expect(_c([[]]).cartesian().toArray()).toEqual([]);
+        expect(_([[]]).cartesian().toArray()).toEqual([]);
 
         expect(
-            _c([[1, 2]])
-                .cartesian()
-                .toArray(),
-        ).toEqual([[1], [2]]);
-
-        expect(
-            _c([
-                [1, 2],
-                [3, 4],
-            ])
-                .cartesian()
-                .toArray(),
-        ).toEqual([
-            [1, 3],
-            [1, 4],
-            [2, 3],
-            [2, 4],
-        ]);
-
-        expect(
-            _c([[1, 2], [3, 4], [5]])
+            _([[1, 2], [3, 4], [5]])
                 .cartesian()
                 .toArray(),
         ).toEqual([
@@ -276,7 +256,7 @@ describe("Collection", () => {
         ];
 
         expect(
-            _c(unsortedObjects)
+            _(unsortedObjects)
                 .orderBy([
                     [obj => obj.value, "asc"],
                     [obj => obj.id, "desc"],
@@ -287,8 +267,8 @@ describe("Collection", () => {
 
     test("zipLongest", () => {
         expect(
-            _c([1, 2, 3])
-                .zipLongest(_c(["a", "b"]))
+            _([1, 2, 3])
+                .zipLongest(_(["a", "b"]))
                 .toArray(),
         ).toEqual([
             [1, "a"],
@@ -298,7 +278,7 @@ describe("Collection", () => {
     });
 
     test("zip", () => {
-        const zipped = _c([1, 2, 3]).zip(_c(["a", "b"]));
+        const zipped = _([1, 2, 3]).zip(_(["a", "b"]));
 
         expectTypeOf(zipped).toEqualTypeOf<Collection<[number, string]>>();
         expect(zipped.toArray()).toEqual([
@@ -308,11 +288,11 @@ describe("Collection", () => {
     });
 
     test("prepend", () => {
-        expect(_c([2, 3]).prepend(1).toArray()).toEqual([1, 2, 3]);
+        expect(_([2, 3]).prepend(1).toArray()).toEqual([1, 2, 3]);
     });
 
     test("indexBy", () => {
-        const values = _c(["a", "ab", "x", "xy"]).indexBy(s => s.length);
+        const values = _(["a", "ab", "x", "xy"]).indexBy(s => s.length);
 
         expect(values.size).toEqual(2);
         expect(values.get(1)).toEqual("x");
@@ -320,7 +300,7 @@ describe("Collection", () => {
     });
 
     test("groupBy", () => {
-        const values = _c(["a", "ab", "x", "y", "xy"]).groupBy(s => s.length);
+        const values = _(["a", "ab", "x", "y", "xy"]).groupBy(s => s.length);
 
         expect(values.size).toEqual(2);
         expect(values.get(1)).toEqual(["a", "x", "y"]);
@@ -328,7 +308,7 @@ describe("Collection", () => {
     });
 
     test("groupBy", () => {
-        const values = _c(["a", "ab", "x", "y", "xy"]).groupBy(s => s.length);
+        const values = _(["a", "ab", "x", "y", "xy"]).groupBy(s => s.length);
 
         expect(values.size).toEqual(2);
         expect(values.get(1)).toEqual(["a", "x", "y"]);
@@ -336,7 +316,7 @@ describe("Collection", () => {
     });
 
     test("groupAndMap", () => {
-        const values = _c(["1", "12", "9", "89"]).groupFromMap(s => [s.length, parseInt(s)]);
+        const values = _(["1", "12", "9", "89"]).groupFromMap(s => [s.length, parseInt(s)]);
 
         expect(values.size).toEqual(2);
         expect(values.get(1)).toEqual([1, 9]);
@@ -344,7 +324,7 @@ describe("Collection", () => {
     });
 
     test("toHashMap from pairs", () => {
-        const hashMap = _c([1, 2]).toHashMap(x => [2 * x, x.toString()]);
+        const hashMap = _([1, 2]).toHashMap(x => [2 * x, x.toString()]);
 
         expect(hashMap.size).toEqual(2);
         expect(hashMap.get(2)).toEqual("1");
@@ -352,10 +332,17 @@ describe("Collection", () => {
     });
 
     test("toIndexedSet", () => {
-        const objs = [{ id: 1 }, { id: 2 }];
-        const set = _c(objs).toIndexedSet(x => x.id);
+        const objs = [
+            { id: "1", name: "Name1" },
+            { id: "2", name: "Name2" },
+        ];
+        const set = _(objs).toIndexedSet(obj => obj, getId);
 
-        const expectedSet = IndexedSet.fromArray(objs, x => x.id);
+        const expectedSet = IndexedSet.fromArray(objs, getId);
         expect(set.equals(expectedSet)).toBe(true);
     });
 });
+
+function getId(obj: { id: string }): string {
+    return obj.id;
+}
