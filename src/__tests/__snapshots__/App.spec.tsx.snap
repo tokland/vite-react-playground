@@ -6,21 +6,25 @@ exports[`App > renders headline 1`] = `
     class="App"
   >
     <nav>
-      <a
-        href="/"
-      >
+      <span>
         Home
-      </a>
+      </span>
       |
       <a
         href="/counter/1"
       >
         Counter 1
       </a>
+      |
+      <a
+        href="/counter/2"
+      >
+        Counter 2
+      </a>
     </nav>
-    <h1>
+    <h3>
       Vite + React
-    </h1>
+    </h3>
   </div>
 </DocumentFragment>
 `;

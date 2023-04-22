@@ -10,12 +10,12 @@ export class HashMap<K, V> {
         return new HashMap<K, V>(RimbuHashMap.empty());
     }
 
-    static fromPairs<K, V>(pairs: Array<[K, V]>) {
+    static fromPairs<K, V>(pairs: Array<[K, V]>): HashMap<K, V> {
         return new HashMap(RimbuHashMap.from(pairs));
     }
 
-    static fromObject<K extends string, V>(obj: Record<K, V>) {
-        return HashMap.fromPairs(Object.entries(obj));
+    static fromObject<K extends keyof any, V>(obj: Record<K, V>) {
+        return HashMap.fromPairs<K, V>(Object.entries(obj) as Array<[K, V]>);
     }
 
     /* Methods */
@@ -84,26 +84,22 @@ export class HashMap<K, V> {
         return this.toCollection().groupFromMap(([key, value]) => [value, key]);
     }
 
-    /* To implement / test */
-
-    _forEach(_fn: (pair: [K, V]) => void): void {}
-
-    _mapKeys<K2>(_mapper: (pair: [K, V]) => K2): HashMap<K2, V> {
-        return HashMap.empty();
-    }
-
     mapValues<V2>(mapper: (pair: [K, V]) => V2): HashMap<K, V2> {
         return new HashMap(this._map.mapValues((value, key) => mapper([key, value])));
     }
 
-    _merge(_other: HashMap<K, V>): HashMap<K, V> {
-        return this;
+    mapKeys<K2>(_mapper: (pair: [K, V]) => K2): HashMap<K2, V> {
+        const pairs = this._map.stream().map(pair => {
+            return [_mapper(pair as [K, V]), pair[1]] as [K2, V];
+        });
+        return HashMap.fromPairs(pairs.toArray());
     }
 
-    _mergeWith(
-        _other: HashMap<K, V>,
-        _mergeFn: (pair1: [K, V], pair2: [K, V]) => V,
-    ): HashMap<K, V> {
-        return this;
+    merge(other: HashMap<K, V>): HashMap<K, V> {
+        return new HashMap(this._map.addEntries(other.toPairs()));
+    }
+
+    forEach(fn: (pair: readonly [K, V]) => void): void {
+        this._map.forEach(fn);
     }
 }

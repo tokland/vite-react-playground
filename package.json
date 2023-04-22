@@ -7,7 +7,7 @@
         "dev": "vite",
         "start": "vite",
         "lint": "eslint src",
-        "lint-prune": "ts-prune --error",
+        "lint-unused": "ts-prune --error",
         "test": "vitest run",
         "test-watch": "vitest watch",
         "test-integration": "npx playwright test --reporter=list",

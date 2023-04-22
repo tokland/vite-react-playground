@@ -1,24 +1,44 @@
-import "./App.css";
 import React from "react";
 import HomePage from "./HomePage";
 import CounterPage from "./CounterPage";
 import { routes, useRoute } from "./router";
+import { Route } from "type-route";
 
-function App() {
-    const route = useRoute();
+type JSX = React.ReactElement<any, any>;
 
+function Router(): JSX {
     return (
         <>
             <nav>
-                <a {...routes.home().link}>Home</a>|
-                <a {...routes.counter({ id: "1" }).link}>Counter 1</a>
+                <NavLink title="Home" route={routes.home()} />|
+                <NavLink title="Counter 1" route={routes.counter({ id: "1" })} />|
+                <NavLink title="Counter 2" route={routes.counter({ id: "2" })} />
             </nav>
 
-            {route.name === "home" && <HomePage />}
-            {route.name === "counter" && <CounterPage route={route} />}
-            {route.name === false && "Not Found"}
+            <ComponentByRoute />
         </>
     );
 }
 
-export default React.memo(App);
+function NavLink<T extends Route<typeof routes>>(props: { title: string; route: T }): JSX {
+    const route = useRoute();
+    const isCurrent = props.route.href === route.href;
+    return isCurrent ? <span>{props.title}</span> : <a {...props.route.link}>{props.title}</a>;
+}
+
+function ComponentByRoute(): JSX {
+    const route = useRoute();
+
+    switch (route.name) {
+        case "home":
+            return <HomePage />;
+        case "counter":
+            return <CounterPage route={route} />;
+        case false: {
+            // routes.home().push();
+            return <>Not Found</>;
+        }
+    }
+}
+
+export default React.memo(Router);

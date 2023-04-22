@@ -85,6 +85,48 @@ describe("transformations", () => {
             [2, ["b", "c"]],
         ]);
     });
+
+    test("mapValues", () => {
+        expect(mapAbc123.mapValues(([key, value]) => `${key}${value}`).toPairs()).toEqual([
+            ["a", "a1"],
+            ["b", "b2"],
+            ["c", "c3"],
+        ]);
+    });
+
+    test("mapKeys", () => {
+        expect(mapAbc123.mapKeys(([key, value]) => `${key}${value}`).toPairs()).toEqual([
+            ["a1", 1],
+            ["b2", 2],
+            ["c3", 3],
+        ]);
+    });
+
+    test("merge", () => {
+        const mapAc = HashMap.fromPairs([
+            ["a", 11],
+            ["c", 33],
+            ["d", 44],
+        ]);
+
+        expect(mapAbc123.merge(mapAc).toPairs()).toEqual([
+            ["a", 11],
+            ["b", 2],
+            ["c", 33],
+            ["d", 44],
+        ]);
+    });
+
+    test("forEach", () => {
+        const output: Array<[string, number]> = [];
+        mapAbc123.forEach(([key, value]) => output.push([key, value]));
+
+        expect(output).toEqual([
+            ["a", 1],
+            ["b", 2],
+            ["c", 3],
+        ]);
+    });
 });
 
 describe("filtering by key or value", () => {
