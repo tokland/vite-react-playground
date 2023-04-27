@@ -4,7 +4,7 @@ import { HashMap } from "../HashMap";
 const mapAbc123 = HashMap.fromPairs([
     ["a", 1],
     ["b", 2],
-    ["c", 33],
+    ["c", 3],
 ]);
 
 describe("constructors", () => {
