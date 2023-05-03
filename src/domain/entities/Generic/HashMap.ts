@@ -89,8 +89,8 @@ export class HashMap<K, V> {
     }
 
     mapKeys<K2>(_mapper: (pair: [K, V]) => K2): HashMap<K2, V> {
-        const pairs = this._map.stream().map(pair => {
-            return [_mapper(pair as [K, V]), pair[1]] as [K2, V];
+        const pairs = this._map.stream().map(([key, value]) => {
+            return [_mapper([key, value]), value] as [K2, V];
         });
         return HashMap.fromPairs(pairs.toArray());
     }

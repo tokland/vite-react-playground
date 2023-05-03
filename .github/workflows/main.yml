@@ -1,0 +1,54 @@
+name: Application testing
+on:
+    push:
+    workflow_dispatch:
+jobs:
+    unit-tests:
+        name: Unit tests
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Setup Node
+              uses: actions/setup-node@v3
+              with:
+                  node-version: "16.14.0"
+
+            - name: Install yarn
+              run: npm install -g yarn
+
+            - name: Get yarn cache directory path
+              id: yarn-cache-dir-path
+              run: echo "dir=$(yarn cache dir)" >>$GITHUB_OUTPUT
+
+            - name: Cache yarn dependencies
+              uses: actions/cache@v3
+              id: yarn-cache
+              with:
+                  path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+                  key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+                  restore-keys: |
+                      ${{ runner.os }}-yarn-
+
+            - name: Install dependencies
+              run: yarn install --frozen-lockfile --silent
+
+            - name: Run jest tests
+              run: yarn test
+
+            - name: Typescript compile
+              run: npx tsc
+
+            - name: Install Playwright Browsers
+              run: npx playwright install --with-deps
+
+            - name: Run Playwright tests
+              run: npx playwright test
+
+            - uses: actions/upload-artifact@v3
+              if: always()
+              with:
+                  name: playwright-report
+                  path: playwright-report/
+                  retention-days: 30

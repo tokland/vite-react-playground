@@ -1,7 +1,7 @@
 import React from "react";
 import HomePage from "./HomePage";
 import CounterPage from "./CounterPage";
-import { routes, useRoute } from "./router";
+import { routes, useRoute } from "./routes";
 import { Route } from "type-route";
 
 type JSX = React.ReactElement<any, any>;
@@ -35,7 +35,6 @@ function ComponentByRoute(): JSX {
         case "counter":
             return <CounterPage route={route} />;
         case false: {
-            // routes.home().push();
             return <>Not Found</>;
         }
     }

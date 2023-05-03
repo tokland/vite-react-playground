@@ -4,15 +4,16 @@
     "version": "0.0.0",
     "type": "module",
     "scripts": {
+        "build": "tsc && vite build",
         "dev": "vite",
-        "start": "vite",
+        "generate-docs": "typedoc --entryPointStrategy expand ./src",
         "lint": "eslint src",
         "lint-unused": "ts-prune --error",
+        "start": "vite",
         "test": "vitest run",
         "test-watch": "vitest watch",
-        "test-integration": "npx playwright test --reporter=list",
-        "build": "tsc && vite build",
-        "preview": "vite preview"
+        "code-quality": "yarn lint && yarn lint-unused && yarn test && yarn test-integration",
+        "test-integration": "playwright test --reporter=list"
     },
     "dependencies": {
         "@rimbu/hashed": "^0.9.1",
@@ -23,7 +24,7 @@
         "zustand": "^4.3.7"
     },
     "devDependencies": {
-        "@playwright/test": "^1.32.2",
+        "@playwright/test": "^1.33.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^14.0.0",
         "@types/node": "^18.15.11",
@@ -35,9 +36,9 @@
         "eslint-plugin-unused-imports": "^2.0.0",
         "expect-type": "^0.15.0",
         "jsdom": "^21.1.1",
-        "playwright": "^1.32.2",
         "prettier": "^2.8.7",
         "ts-prune": "^0.10.3",
+        "typedoc": "^0.24.6",
         "typescript": "^4.9.3",
         "vite": "^4.2.0",
         "vite-plugin-eslint": "^1.8.1",

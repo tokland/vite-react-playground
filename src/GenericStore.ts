@@ -2,9 +2,9 @@ import React from "react";
 import { StoreApi, createStore, useStore as useZustandStore } from "zustand";
 import { shallow } from "zustand/shallow";
 
-export type SetState<State> = StoreApi<State>["setState"];
+export type SetState<State> = Accessors<State>["set"];
 
-export type GetState<State> = StoreApi<State>["getState"];
+export type GetState<State> = Accessors<State>["get"];
 
 export function buildStore<State, Actions>() {
     const StoreContext = React.createContext<Store<State, Actions> | null>(null);
@@ -19,14 +19,14 @@ export function buildStore<State, Actions>() {
             });
         });
 
-        const ContextComponent = React.useCallback<Component>(
+        const ContextProvider = React.useCallback<Component>(
             props => React.createElement(StoreContext.Provider, { value: store }, props.children),
             [store],
         );
 
         const actions = useStoreActions(store);
 
-        return [ContextComponent, actions, store] as const;
+        return [ContextProvider, actions, store] as const;
     }
 
     function useSelector<U>(selector: (state: State) => U, options?: Options): U {
@@ -69,7 +69,7 @@ function useStoreActions<State, Actions>(store: Store<State, Actions>) {
     return useZustandStore(store, storeValue => storeValue._actions);
 }
 
-type Options = { shallow: boolean };
+type Options = { shallow?: boolean };
 
 type Store<State, Actions> = StoreApi<StoreValue<State, Actions>>;
 

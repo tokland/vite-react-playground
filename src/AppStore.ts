@@ -2,7 +2,7 @@ import { buildStore, SetState } from "./GenericStore";
 import { Counter } from "./domain/entities/Counter";
 import { HashMap } from "./domain/entities/Generic/HashMap";
 
-interface AppState {
+export interface AppState {
     counters: HashMap<string, Counter>;
 }
 
