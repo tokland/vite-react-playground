@@ -2,6 +2,8 @@ import { Route } from "type-route";
 import { routes } from "../routes";
 import { useAppActions, useAppState } from "../AppStore";
 import React from "react";
+import { useCancellableEffect } from "../hooks/useCancellableEffect";
+import { noCancel } from "../../domain/entities/generic/Async";
 
 interface CounterPageProps {
     route: Route<typeof routes.counter>;
@@ -10,12 +12,20 @@ interface CounterPageProps {
 function CounterPage(props: CounterPageProps) {
     const counter = useAppState(state => state.counters.get({ id: props.route.params.id }));
     const actions = useAppActions();
-    if (!counter) return null;
+    const counterId = counter?.id;
+
+    const [decrement] = useCancellableEffect(
+        React.useCallback(() => {
+            return counterId ? actions.decrement(counterId) : noCancel;
+        }, [actions, counterId]),
+        { cancelOnComponentUnmount: true },
+    );
+    if (!counter) return <>Loading...</>;
 
     return (
         <div className="App">
             <div className="card">
-                <button onClick={() => actions.decrement(counter.id)}>-1</button>
+                <button onClick={decrement}>-1</button>
 
                 <span data-testid="counter-value" style={styles.value}>
                     {counter.value}

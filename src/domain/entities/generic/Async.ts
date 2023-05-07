@@ -33,7 +33,7 @@ export class Async<T> {
     run(onSuccess: (data: T) => void, onError: (error: AsyncError) => void): Cancel {
         return this._promise().then(onSuccess, err => {
             if (err instanceof Cancellation) {
-                onError(new AsyncCancel());
+                // no-op
             } else if (err instanceof AsyncError) {
                 onError(err);
             } else {
@@ -126,11 +126,9 @@ export class AsyncError extends Error {
     type = "asyncError";
 }
 
-export class AsyncCancel extends Error {
-    type = "asyncCancel";
-}
+export type Cancel = () => void;
 
-type Cancel = () => void;
+export const noCancel: Cancel = () => {};
 
 function buildError(message: string): AsyncError {
     return new AsyncError(message);

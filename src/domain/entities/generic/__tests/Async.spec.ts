@@ -1,5 +1,5 @@
 import { describe, expect, test, it, vi } from "vitest";
-import { Async, AsyncCancel, AsyncError } from "../Async";
+import { Async, AsyncError } from "../Async";
 
 describe("Basic builders", () => {
     test("Async.success", async () => {
@@ -141,7 +141,7 @@ describe("fromComputation", () => {
 });
 
 describe("cancel", () => {
-    it("cancels the async and the error branch is called with AsyncCancel", async () => {
+    it("cancels the async and the error branch is not called", async () => {
         const success = vi.fn();
         const reject = vi.fn();
 
@@ -150,8 +150,7 @@ describe("cancel", () => {
         await nextTick();
 
         expect(success).not.toHaveBeenCalled();
-        expect(reject).toHaveBeenCalledTimes(1);
-        expect(reject.mock.calls[0]).toEqual([new AsyncCancel()]);
+        expect(reject).toHaveBeenCalledTimes(0);
     });
 });
 
@@ -169,8 +168,8 @@ describe("join2", () => {
 
 describe("sequential", () => {
     it("returns an async containing all the values as an array", () => {
-        const xs = Async.sequential([Async.success(1), Async.success(2), Async.success(3)]);
-        expect(xs.toPromise()).resolves.toEqual([1, 2, 3]);
+        const values$ = Async.sequential([Async.success(1), Async.success(2), Async.success(3)]);
+        expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
     });
 });
 

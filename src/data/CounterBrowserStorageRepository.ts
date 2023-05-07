@@ -7,14 +7,14 @@ export class CounterBrowserStorageRepository implements CounterRepository {
         const key = this.getKey(id);
         const value = window.localStorage.getItem(key);
         const counter: Counter = new Counter({ id, value: value ? parseInt(value) : 0 });
-        return Async.sleep(1000).map(() => counter);
+        return Async.sleep(500).map(() => counter);
     }
 
     save(counter: Counter): Async<Counter> {
         return Async.block(async $ => {
             const key = this.getKey(counter.id);
             const value = counter.value.toString();
-            await $(Async.sleep(1000));
+            await $(Async.sleep(2500));
             console.debug("localStore.setItem", key, "=", value);
             window.localStorage.setItem(key, value);
             return counter;
