@@ -69,10 +69,7 @@ export class Async<T> {
     static sequential<T>(asyncs: Async<T>[]): Async<T[]> {
         return Async.block(async $ => {
             const output: T[] = [];
-            for (const async of asyncs) {
-                const value = await $(async);
-                output.push(value);
-            }
+            for (const async of asyncs) output.push(await $(async));
             return output;
         });
     }
@@ -83,14 +80,13 @@ export class Async<T> {
                 const queue: CancellablePromise<void>[] = [];
                 const output: T[] = new Array(asyncs.length);
 
-                for (const idx in asyncs) {
-                    const async = asyncs[idx]!;
-                    const queuePromise = async._promise().then(res => {
-                        queue.splice(queue.indexOf(queuePromise), 1);
+                for (const [idx, async] of asyncs.entries()) {
+                    const queueItem$ = async._promise().then(res => {
+                        queue.splice(queue.indexOf(queueItem$), 1);
                         output[idx] = res;
                     });
 
-                    queue.push(queuePromise);
+                    queue.push(queueItem$);
 
                     if (queue.length >= options.concurrency)
                         await $(CancellablePromise.race(queue));
