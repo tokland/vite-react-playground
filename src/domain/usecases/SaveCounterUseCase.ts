@@ -5,7 +5,7 @@ import { CounterRepository } from "../repositories/CounterRepository";
 export class SaveCounterUseCase {
     constructor(private counterRepository: CounterRepository) {}
 
-    execute(counter: Counter): Async<Counter> {
+    execute(counter: Counter): Async<void> {
         return this.counterRepository.save(counter);
     }
 }
