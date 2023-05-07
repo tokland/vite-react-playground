@@ -4,9 +4,7 @@ type Cancel = () => void;
 
 export function useCancellableEffect<Args extends any[]>(
     runEffect: (...args: Args) => Cancel,
-    options: { cancelOnComponentUnmount?: boolean } = {},
 ): [(...args: Args) => void, Cancel] {
-    const { cancelOnComponentUnmount = false } = options;
     const [args, setArgs] = React.useState<Args>();
     const clearArgs = React.useCallback(() => setArgs(undefined), [setArgs]);
     const cancelRef = React.useRef<Cancel>(() => clearArgs());
@@ -21,8 +19,8 @@ export function useCancellableEffect<Args extends any[]>(
             cancelEffect();
         };
 
-        return cancelOnComponentUnmount ? cancelEffect : undefined;
-    }, [args, runEffect, cancelOnComponentUnmount, clearArgs]);
+        return cancelEffect;
+    }, [args, runEffect, clearArgs]);
 
     const run = React.useCallback((...args: Args) => setArgs(args), [setArgs]);
     const cancel = cancelRef.current;

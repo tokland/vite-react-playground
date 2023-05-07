@@ -38,7 +38,7 @@ jobs:
               uses: carlesnunez/check-my-bundlephobia@v1.7.0
 
             - name: Run jest tests
-              run: yarn test
+              run: yarn test-unit
 
             - name: Typescript compile
               run: npx tsc
@@ -46,8 +46,8 @@ jobs:
             - name: Install Playwright Browsers
               run: npx playwright install --with-deps
 
-            - name: Run Playwright tests
-              run: npx playwright test
+            - name: Run integration tests (Playwright)
+              run: yarn test-integration
 
             - uses: actions/upload-artifact@v3
               if: always()

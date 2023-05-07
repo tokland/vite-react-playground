@@ -3,10 +3,9 @@ import HomePage from "./pages/HomePage";
 import CounterPage from "./pages/CounterPage";
 import { Routes, routes, useRoute } from "./routes";
 import { useAppActions } from "./AppStore";
+import { ReactElement } from "./utils/react";
 
-type JSX = React.ReactElement<any, any>;
-
-function Router(): JSX {
+function Router(): ReactElement {
     const route = useRoute();
     useRoutesLoading(route);
 
@@ -23,7 +22,7 @@ function Router(): JSX {
     );
 }
 
-function NavLink<T extends Routes>(props: { title: string; route: T }): JSX {
+function NavLink<T extends Routes>(props: { title: string; route: T }): ReactElement {
     const route = useRoute();
     const isCurrent = props.route.href === route.href;
     return isCurrent ? <span>{props.title}</span> : <a {...props.route.link}>{props.title}</a>;
@@ -37,7 +36,7 @@ function useRoutesLoading(route: Routes) {
     }, [actions, route]);
 }
 
-function ComponentByRoute(props: { route: Routes }): JSX {
+function ComponentByRoute(props: { route: Routes }): ReactElement {
     const { route } = props;
 
     switch (route.name) {

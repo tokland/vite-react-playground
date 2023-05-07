@@ -3,24 +3,30 @@ import { routes } from "../routes";
 import { useAppActions, useAppState } from "../AppStore";
 import React from "react";
 import { useCancellableEffect } from "../hooks/useCancellableEffect";
-import { noCancel } from "../../domain/entities/generic/Async";
+import { Counter } from "../../domain/entities/Counter";
+import { ReactElement } from "../utils/react";
 
 interface CounterPageProps {
     route: Route<typeof routes.counter>;
 }
 
-function CounterPage(props: CounterPageProps) {
+function CounterPage(props: CounterPageProps): ReactElement {
     const counter = useAppState(state => state.counters.get({ id: props.route.params.id }));
+    return counter ? <CounterContents counter={counter} /> : <>Loading...</>;
+}
+
+function CounterContents(props: { counter: Counter }): ReactElement {
+    const { counter } = props;
     const actions = useAppActions();
-    const counterId = counter?.id;
+    const counterId = counter.id;
+
+    const [increment] = useCancellableEffect(
+        React.useCallback(() => actions.increment(counterId), [actions, counterId]),
+    );
 
     const [decrement] = useCancellableEffect(
-        React.useCallback(() => {
-            return counterId ? actions.decrement(counterId) : noCancel;
-        }, [actions, counterId]),
-        { cancelOnComponentUnmount: true },
+        React.useCallback(() => actions.decrement(counterId), [actions, counterId]),
     );
-    if (!counter) return <>Loading...</>;
 
     return (
         <div className="App">
@@ -31,7 +37,7 @@ function CounterPage(props: CounterPageProps) {
                     {counter.value}
                 </span>
 
-                <button onClick={() => actions.increment(counter.id)}>+1</button>
+                <button onClick={increment}>+1</button>
             </div>
         </div>
     );
