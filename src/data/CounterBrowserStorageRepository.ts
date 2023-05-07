@@ -10,14 +10,13 @@ export class CounterBrowserStorageRepository implements CounterRepository {
         return Async.sleep(500).map(() => counter);
     }
 
-    save(counter: Counter): Async<Counter> {
+    save(counter: Counter): Async<void> {
         return Async.block(async $ => {
             const key = this.getKey(counter.id);
             const value = counter.value.toString();
-            await $(Async.sleep(2500));
+            await $(Async.sleep(1000));
             console.debug("localStore.setItem", key, "=", value);
             window.localStorage.setItem(key, value);
-            return counter;
         });
     }
 
