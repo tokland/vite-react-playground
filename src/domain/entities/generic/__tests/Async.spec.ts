@@ -155,6 +155,39 @@ describe("cancel", () => {
     });
 });
 
+describe("join2", () => {
+    it("returns a single async with the pair of values", () => {
+        const join$ = Async.join2(Async.success(123), Async.success("hello"));
+        expect(join$.toPromise()).resolves.toEqual([123, "hello"]);
+    });
+
+    it("returns an error if some of the inputs is an error", () => {
+        const join$ = Async.join2(Async.success(123), Async.error("Some error"));
+        expect(join$.toPromise()).rejects.toThrow("Some error");
+    });
+});
+
+describe("sequential", () => {
+    it("returns an async containing all the values as an array", () => {
+        const xs = Async.sequential([Async.success(1), Async.success(2), Async.success(3)]);
+        expect(xs.toPromise()).resolves.toEqual([1, 2, 3]);
+    });
+});
+
+describe("parallel", () => {
+    it("returns an async containing all the values as an array", () => {
+        const asyncs = [Async.success(1), Async.success(2), Async.success(3)];
+        const values$ = Async.parallel(asyncs, { concurrency: 2 });
+        expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
+    });
+
+    it("returns an async containing all the values as an array with a concurrency larger than length", () => {
+        const asyncs = [Async.success(1), Async.success(2), Async.success(3)];
+        const values$ = Async.parallel(asyncs, { concurrency: 4 });
+        expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
+    });
+});
+
 function nextTick() {
     return new Promise(process.nextTick);
 }

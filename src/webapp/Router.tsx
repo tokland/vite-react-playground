@@ -1,12 +1,15 @@
 import React from "react";
-import HomePage from "./HomePage";
-import CounterPage from "./CounterPage";
-import { routes, useRoute } from "./routes";
-import { Route } from "type-route";
+import HomePage from "./pages/HomePage";
+import CounterPage from "./pages/CounterPage";
+import { Routes, routes, useRoute } from "./routes";
+import { useAppActions } from "./AppStore";
 
 type JSX = React.ReactElement<any, any>;
 
 function Router(): JSX {
+    const route = useRoute();
+    useRoutesLoading(route);
+
     return (
         <>
             <nav>
@@ -15,19 +18,27 @@ function Router(): JSX {
                 <NavLink title="Counter 2" route={routes.counter({ id: "2" })} />
             </nav>
 
-            <ComponentByRoute />
+            <ComponentByRoute route={route} />
         </>
     );
 }
 
-function NavLink<T extends Route<typeof routes>>(props: { title: string; route: T }): JSX {
+function NavLink<T extends Routes>(props: { title: string; route: T }): JSX {
     const route = useRoute();
     const isCurrent = props.route.href === route.href;
     return isCurrent ? <span>{props.title}</span> : <a {...props.route.link}>{props.title}</a>;
 }
 
-function ComponentByRoute(): JSX {
-    const route = useRoute();
+function useRoutesLoading(route: Routes) {
+    const actions = useAppActions();
+
+    React.useEffect(() => {
+        actions.onEnter(route);
+    }, [actions, route]);
+}
+
+function ComponentByRoute(props: { route: Routes }): JSX {
+    const { route } = props;
 
     switch (route.name) {
         case "home":

@@ -1,17 +1,18 @@
 import { test, expect, Page } from "@playwright/test";
 
-test("counter actions", async ({ page }) => {
+test("counter actions increase/decrease value", async ({ page }) => {
     await page.goto("/");
 
     await page.getByRole("link", { name: "Counter 1" }).click();
     await page.getByRole("button", { name: "+1" }).click();
     await page.getByRole("button", { name: "+1" }).click();
-    expect(await text(page, { testId: "counter-value" })).toEqual("3");
+    await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("3");
 
     await page.getByRole("button", { name: "-1" }).click();
-    expect(await text(page, { testId: "counter-value" })).toEqual("2");
+    await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("2");
 });
 
-function text(page: Page, options: { testId: string }): Promise<string | null> {
-    return page.getByTestId(options.testId).textContent();
+function text(options: { in: Page; withId: string }): Promise<string | null> {
+    const { in: page, withId: testId } = options;
+    return page.getByTestId(testId).textContent();
 }

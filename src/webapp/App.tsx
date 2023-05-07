@@ -3,20 +3,20 @@ import React from "react";
 import { RouteProvider } from "./routes";
 import Router from "./Router";
 import { AppActions, AppState, useAppStore } from "./AppStore";
-import { Counter } from "./domain/entities/Counter";
-import { HashMap } from "./domain/entities/Generic/HashMap";
+import { Counter } from "../domain/entities/Counter";
+import { IndexedSet } from "../domain/entities/generic/IndexedSet";
 
 const initialState: AppState = {
-    counters: HashMap.fromObject<string, Counter>({
-        "1": Counter.create({ id: "1", value: 1 }),
-        "2": Counter.create({ id: "2", value: 2 }),
-    }),
+    counters: IndexedSet.fromArray(
+        [Counter.create({ id: "1", value: 1 }), Counter.create({ id: "2", value: 2 })],
+        (obj: { id: string }) => obj.id,
+    ),
 };
 
 function App() {
     const [AppProvider] = useAppStore(accessors => ({
         initialState: initialState,
-        actions: new AppActions(accessors.set),
+        actions: new AppActions(accessors.set), // Move to buildStore and pass here only args?
     }));
 
     return (

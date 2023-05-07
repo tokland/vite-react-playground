@@ -5,15 +5,16 @@
     "type": "module",
     "scripts": {
         "build": "tsc && vite build",
-        "dev": "vite",
+        "code-quality": "yarn lint && yarn lint-unused && yarn test-unit && yarn test-integration",
         "generate-docs": "typedoc --entryPointStrategy expand ./src",
         "lint": "eslint src",
         "lint-unused": "ts-prune --error",
         "start": "vite",
-        "test": "vitest run",
-        "test-watch": "vitest watch",
-        "code-quality": "yarn lint && yarn lint-unused && yarn test && yarn test-integration",
-        "test-integration": "playwright test --reporter=list"
+        "test-unit": "vitest run",
+        "test-unit-watch": "vitest watch",
+        "test-integration": "playwright test --reporter=list",
+        "test-integration-watch": "PWTEST_WATCH=1 playwright test --reporter=list",
+        "typesafe-i18n": "typesafe-i18n"
     },
     "dependencies": {
         "@rimbu/hashed": "^0.9.1",
@@ -31,6 +32,7 @@
         "@types/react": "^18.0.28",
         "@types/react-dom": "^18.0.11",
         "@vitejs/plugin-react": "^3.1.0",
+        "cmd-ts": "^0.12.1",
         "eslint": "^8.37.0",
         "eslint-config-react-app": "^7.0.1",
         "eslint-plugin-unused-imports": "^2.0.0",

@@ -19,7 +19,7 @@ export class Async<T> {
     static fromComputation<T>(
         computation: (resolve: (value: T) => void, reject: (message: string) => void) => Cancel,
     ): Async<T> {
-        let cancel: Cancel;
+        let cancel: Cancel = () => {};
 
         return new Async(() => {
             const promise = new Promise<T>((resolve, reject) => {
@@ -56,6 +56,50 @@ export class Async<T> {
 
     toPromise(): Promise<T> {
         return this._promise();
+    }
+
+    static join2<T, S>(async1: Async<T>, async2: Async<S>): Async<[T, S]> {
+        return new Async(() => {
+            return CancellablePromise.all<T, S>([async1._promise(), async2._promise()]);
+        });
+    }
+
+    // TODO: joinObj
+
+    static sequential<T>(asyncs: Async<T>[]): Async<T[]> {
+        return Async.block(async $ => {
+            const output: T[] = [];
+            for (const async of asyncs) {
+                const value = await $(async);
+                output.push(value);
+            }
+            return output;
+        });
+    }
+
+    static parallel<T>(asyncs: Async<T>[], options: { concurrency: number }): Async<T[]> {
+        const promise = () =>
+            buildCancellablePromise(async $ => {
+                const queue: CancellablePromise<T>[] = [];
+                const output: CancellablePromise<T>[] = [];
+
+                for (const async of asyncs) {
+                    const promise = async._promise().then(res => {
+                        queue.splice(queue.indexOf(promise), 1);
+                        return res;
+                    });
+
+                    queue.push(promise);
+                    output.push(promise);
+
+                    if (queue.length >= options.concurrency)
+                        await $(CancellablePromise.race(queue));
+                }
+
+                return CancellablePromise.all(output);
+            });
+
+        return new Async(promise);
     }
 
     static sleep(ms: number): Async<void> {
