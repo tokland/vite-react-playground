@@ -47,7 +47,7 @@ describe("toPromise", () => {
 
 describe("helpers", () => {
     test("Async.sleep", async () => {
-        expect(Async.sleep(1).toPromise()).resolves.toEqual(undefined);
+        expect(Async.sleep(1).toPromise()).resolves.toEqual(1);
     });
 
     test("Async.void", async () => {
@@ -175,16 +175,16 @@ describe("sequential", () => {
 });
 
 describe("parallel", () => {
-    it("returns an async containing all the values as an array", () => {
-        const asyncs = [Async.success(1), Async.success(2), Async.success(3)];
+    it("returns an async containing result as an array (concurrency smaller than length)", () => {
+        const asyncs = [Async.sleep(3), Async.sleep(1), Async.sleep(2)];
         const values$ = Async.parallel(asyncs, { concurrency: 2 });
-        expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
+        expect(values$.toPromise()).resolves.toEqual([3, 1, 2]);
     });
 
-    it("returns an async containing all the values as an array with a concurrency larger than length", () => {
-        const asyncs = [Async.success(1), Async.success(2), Async.success(3)];
+    it("returns an async containing result as an array (concurrency larger than length)", () => {
+        const asyncs = [Async.sleep(3), Async.sleep(1), Async.sleep(2)];
         const values$ = Async.parallel(asyncs, { concurrency: 4 });
-        expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
+        expect(values$.toPromise()).resolves.toEqual([3, 1, 2]);
     });
 });
 

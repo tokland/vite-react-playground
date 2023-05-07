@@ -78,32 +78,32 @@ export class Async<T> {
     }
 
     static parallel<T>(asyncs: Async<T>[], options: { concurrency: number }): Async<T[]> {
-        const promise = () =>
+        return new Async(() =>
             buildCancellablePromise(async $ => {
-                const queue: CancellablePromise<T>[] = [];
-                const output: CancellablePromise<T>[] = [];
+                const queue: CancellablePromise<void>[] = [];
+                const output: T[] = new Array(asyncs.length);
 
-                for (const async of asyncs) {
-                    const promise = async._promise().then(res => {
-                        queue.splice(queue.indexOf(promise), 1);
-                        return res;
+                for (const idx in asyncs) {
+                    const async = asyncs[idx]!;
+                    const queuePromise = async._promise().then(res => {
+                        queue.splice(queue.indexOf(queuePromise), 1);
+                        output[idx] = res;
                     });
 
-                    queue.push(promise);
-                    output.push(promise);
+                    queue.push(queuePromise);
 
                     if (queue.length >= options.concurrency)
                         await $(CancellablePromise.race(queue));
                 }
 
-                return CancellablePromise.all(output);
-            });
-
-        return new Async(promise);
+                await $(CancellablePromise.all(queue));
+                return output;
+            }),
+        );
     }
 
-    static sleep(ms: number): Async<void> {
-        return new Async(() => CancellablePromise.delay(ms)).map(() => undefined);
+    static sleep(ms: number): Async<number> {
+        return new Async(() => CancellablePromise.delay(ms)).map(() => ms);
     }
 
     static void(): Async<void> {
