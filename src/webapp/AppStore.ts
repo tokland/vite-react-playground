@@ -16,33 +16,34 @@ export class AppActions {
         private compositionRoot: CompositionRoot,
     ) {}
 
+    get state() {
+        return this.get();
+    }
+
     increment(counterId: string) {
-        const counter = this.get().counters.get({ id: counterId });
+        const counter = this.state.counters.get({ id: counterId });
         return this.saveCounter(counter?.add(+1));
     }
 
     decrement(counterId: string): Cancel {
-        const counter = this.get().counters.get({ id: counterId });
+        const counter = this.state.counters.get({ id: counterId });
         return this.saveCounter(counter?.add(-1));
     }
 
-    onEnter(routes: Routes) {
-        switch (routes.name) {
+    loadByRoute(route: Routes) {
+        switch (route.name) {
             case "counter":
-                this.compositionRoot.counters.get.execute(routes.params.id).run(
-                    counter => this.set(state => ({ counters: state.counters.add(counter) })),
+                return this.compositionRoot.counters.get.execute(route.params.id).run(
+                    counter => this.set(state => ({ counters: state.counters.update(counter) })),
                     err => console.error(err),
                 );
-                return null;
-            default:
-                return null;
         }
     }
 
     private saveCounter(counter: Counter | undefined): Cancel {
         if (!counter) return noCancel;
 
-        this.set(state => ({ counters: state.counters.add(counter) }));
+        this.set(state => ({ counters: state.counters.update(counter) }));
 
         return this.compositionRoot.counters.save.execute(counter).run(
             _counter => {},
@@ -52,7 +53,5 @@ export class AppActions {
 }
 
 const [useAppStore, useAppState, useAppActions] = buildStore<AppState, AppActions>();
-// ({ actions: (accessors, options: { compositionRoot: CompositionRoot }) => new Actions(accessors.set, options.compositionRoot) })
-// buildStore(initialValue, actionsOptions: { compositionRoot })
 
 export { useAppStore, useAppState, useAppActions };

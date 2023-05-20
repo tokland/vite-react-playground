@@ -5,9 +5,11 @@ import Router from "./Router";
 import { AppActions, AppState, useAppStore } from "./AppStore";
 import { IndexedSet } from "../domain/entities/generic/IndexedSet";
 import { getCompositionRoot } from "../compositionRoot";
+import { Counter } from "../domain/entities/Counter";
+import { getId } from "../domain/entities/Base";
 
 const initialState: AppState = {
-    counters: IndexedSet.fromArray([], (ref: { id: string }) => ref.id),
+    counters: IndexedSet.fromArray([] as Counter[], getId),
 };
 
 function App() {
@@ -15,7 +17,6 @@ function App() {
 
     const [AppProvider] = useAppStore(accessors => ({
         initialState: initialState,
-        // Move to buildStore and pass here only the args?
         actions: new AppActions(accessors.get, accessors.set, compositionRoot),
     }));
 

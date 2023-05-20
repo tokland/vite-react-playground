@@ -1,1 +1,5 @@
-export type ReactElement = React.ReactElement<any, any>;
+export type Element = React.ReactElement;
+
+export function buildStyles<T extends Record<string, React.CSSProperties>>(styles: T): T {
+    return styles;
+}

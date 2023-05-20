@@ -1,12 +1,14 @@
 import { test, expect, Page } from "@playwright/test";
 
-test("counter actions increase/decrease value", async ({ page }) => {
+test("counter actions increase/decrease", async ({ page }) => {
     await page.goto("/");
 
     await page.getByRole("link", { name: "Counter 1" }).click();
     await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("0");
 
     await page.getByRole("button", { name: "+1" }).click();
+    await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("1");
+
     await page.getByRole("button", { name: "+1" }).click();
     await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("2");
 
@@ -14,7 +16,7 @@ test("counter actions increase/decrease value", async ({ page }) => {
     await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("1");
 });
 
-test("persistence of tab reload", async ({ page }) => {
+test("persistence of values when tab is reloaded", async ({ page }) => {
     await page.goto("/");
 
     await page.getByRole("link", { name: "Counter 1" }).click();

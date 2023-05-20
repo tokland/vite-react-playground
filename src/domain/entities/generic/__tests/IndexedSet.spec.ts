@@ -27,7 +27,7 @@ describe("constructors", () => {
 });
 
 describe("operations", () => {
-    const set = IndexedSet.empty(getId).add(objs.mary).add(objs.john);
+    const set = IndexedSet.empty(getId).update(objs.mary).update(objs.john);
 
     test("get non-existing key", () => {
         expect(set.get({ id: "some-non-existing-id" })).toBeUndefined();
@@ -39,12 +39,13 @@ describe("operations", () => {
     });
 
     test("equals", () => {
-        const set1 = IndexedSet.fromArray([objs.john, objs.mary], getId);
-        const set2 = IndexedSet.fromArray([objs.mary, objs.john], getId);
-        const set3 = IndexedSet.fromArray([objs.mary, objs.zelda], getId);
+        const johnAndMary = IndexedSet.fromArray([objs.john, objs.mary], getId);
+        const maryAndJohn = IndexedSet.fromArray([objs.mary, objs.john], getId);
+        const maryAndZelda = IndexedSet.fromArray([objs.mary, objs.zelda], getId);
 
-        expect(set1.equals(set2)).toBe(true);
-        expect(set1.equals(set3)).toBe(false);
+        expect(johnAndMary.equals(johnAndMary)).toBe(true);
+        expect(johnAndMary.equals(maryAndJohn)).toBe(true);
+        expect(johnAndMary.equals(maryAndZelda)).toBe(false);
     });
 
     test("toArray", () => {
@@ -53,5 +54,14 @@ describe("operations", () => {
 
         expect(array.length).toEqual(2);
         expect(array).toEqual(expect.arrayContaining([objs.john, objs.mary]));
+    });
+
+    test("toCollection", () => {
+        const set = IndexedSet.fromArray([objs.john, objs.mary], getId);
+        const collection = set.toCollection();
+
+        expect(collection.size).toEqual(2);
+        expect(collection.get(0)).toEqual(objs.john);
+        expect(collection.get(1)).toEqual(objs.mary);
     });
 });

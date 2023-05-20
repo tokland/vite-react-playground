@@ -3,11 +3,11 @@ import HomePage from "./pages/HomePage";
 import CounterPage from "./pages/CounterPage";
 import { Routes, routes, useRoute } from "./routes";
 import { useAppActions } from "./AppStore";
-import { ReactElement } from "./utils/react";
+import { Element } from "./utils/react";
 
-function Router(): ReactElement {
+function Router(): Element {
     const route = useRoute();
-    useRoutesLoading(route);
+    useRoutesLoading();
 
     return (
         <>
@@ -22,21 +22,23 @@ function Router(): ReactElement {
     );
 }
 
-function NavLink<T extends Routes>(props: { title: string; route: T }): ReactElement {
+function NavLink<T extends Routes>(props: { title: string; route: T }): Element {
     const route = useRoute();
     const isCurrent = props.route.href === route.href;
+
     return isCurrent ? <span>{props.title}</span> : <a {...props.route.link}>{props.title}</a>;
 }
 
-function useRoutesLoading(route: Routes) {
+function useRoutesLoading() {
+    const route = useRoute();
     const actions = useAppActions();
 
     React.useEffect(() => {
-        actions.onEnter(route);
+        actions.loadByRoute(route);
     }, [actions, route]);
 }
 
-function ComponentByRoute(props: { route: Routes }): ReactElement {
+function ComponentByRoute(props: { route: Routes }): Element {
     const { route } = props;
 
     switch (route.name) {

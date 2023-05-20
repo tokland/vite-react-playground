@@ -1,4 +1,5 @@
 import { HashMap as RimbuHashMap } from "@rimbu/hashed";
+import { Collection } from "./Collection";
 
 type Hash = string | number | symbol;
 
@@ -12,7 +13,7 @@ export class IndexedSet<T extends THash, THash> {
         return this.hashMap.get(key);
     }
 
-    add(value: T): IndexedSet<T, THash> {
+    update(value: T): IndexedSet<T, THash> {
         const key = this.getKey(value);
         const updated = this.hashMap.set(key, value);
         return new IndexedSet(updated, this.getKey);
@@ -24,6 +25,10 @@ export class IndexedSet<T extends THash, THash> {
 
     toArray(): T[] {
         return this.hashMap.streamValues().toArray();
+    }
+
+    toCollection(): Collection<T> {
+        return Collection.from(this.toArray());
     }
 
     get size(): number {

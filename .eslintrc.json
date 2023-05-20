@@ -12,7 +12,6 @@
         "@typescript-eslint/camelcase": "off",
         "@typescript-eslint/explicit-function-return-type": ["off"],
         "@typescript-eslint/no-this-alias": ["off"],
-        "unused-imports/no-unused-imports": "warn",
         "@typescript-eslint/no-unnecessary-type-constraint": ["off"],
         "@typescript-eslint/no-unused-vars": [
             "warn",
