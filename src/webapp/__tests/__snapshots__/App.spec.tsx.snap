@@ -22,9 +22,6 @@ exports[`App > renders headline 1`] = `
         Counter 2
       </a>
     </nav>
-    <h3>
-      Vite + React
-    </h3>
   </div>
 </DocumentFragment>
 `;

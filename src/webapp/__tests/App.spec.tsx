@@ -4,10 +4,9 @@ import { render, screen } from "@testing-library/react";
 import App from "../App";
 
 describe("App", () => {
-    it("renders headline", () => {
+    it("renders headline", async () => {
         const res = render(<App />);
-
-        expect(screen.getByRole("heading")).toHaveTextContent("Vite + React");
+        expect(screen.getByText("Home"));
         expect(res.asFragment()).toMatchSnapshot();
     });
 });
