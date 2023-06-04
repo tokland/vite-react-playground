@@ -10,6 +10,7 @@ import { getId } from "../domain/entities/Base";
 
 const initialState: AppState = {
     counters: IndexedSet.fromArray([] as Counter[], getId),
+    //counters: Counters.empty(),
 };
 
 function App() {

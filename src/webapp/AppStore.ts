@@ -4,9 +4,10 @@ import { Routes } from "./routes";
 import { IndexedSet } from "../domain/entities/generic/IndexedSet";
 import { CompositionRoot } from "../compositionRoot";
 import { Cancel, noCancel } from "../domain/entities/generic/Async";
+import { Ref } from "../domain/entities/Base";
 
 export interface AppState {
-    counters: IndexedSet<Counter, { id: string }>;
+    counters: IndexedSet<Counter, Ref>;
 }
 
 export class AppActions {

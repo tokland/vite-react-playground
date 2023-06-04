@@ -1,6 +1,6 @@
 ## Description
 
-Playground and best practices for React SPA.
+Playground and best practices for React SPA with Typescript.
 
 ## Setup
 
@@ -13,7 +13,8 @@ $ yarn start
 ## Build
 
 ```
-$ yarn code-quality
+$ yarn generate-docs
+$ yarn check-code-quality
 $ yarn build
 ```
 
@@ -25,7 +26,8 @@ $ yarn build
 -   Cancelable promises: [real-cancellable-promise](https://github.com/srmagura/real-cancellable-promise) (Async.ts).
 -   Type safe command-line argument parser: [cmd-ts](https://cmd-ts.vercel.app/) (scripts/example.ts)
 -   Immutable data structures: [rimbu](https://rimbu.org/) (Collection.ts, HashMap.ts, IndexedSet.ts)
--   Linting: [eslint](https://eslint.org/) and [ts-prune](https://github.com/nadeesha/ts-prune).
+-   Documentation: [typedoc](https://typedoc.org/).
+-   Code linting: [eslint](https://eslint.org/) and [ts-prune](https://github.com/nadeesha/ts-prune).
 -   Unit testing: [vitest](https://vitest.dev/)
 -   End-to-end testing: [playwright](https://playwright.dev/) (src/tests/playwright)
 

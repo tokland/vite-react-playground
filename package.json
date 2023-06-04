@@ -1,11 +1,11 @@
 {
     "name": "d2-skeleton",
+    "version": "0.0.1",
     "private": true,
-    "version": "0.0.0",
     "scripts": {
         "build": "tsc && vite build --outDir=build",
         "build-dependencies-visualizer": "vite-bundle-visualizer",
-        "code-quality": "yarn lint && yarn test",
+        "check-code-quality": "yarn lint && yarn test",
         "generate-docs": "typedoc --entryPointStrategy expand ./src",
         "lint": "eslint src",
         "lint-unused": "ts-prune --error",
