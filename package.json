@@ -41,6 +41,7 @@
         "eslint-config-react-app": "^7.0.1",
         "eslint-plugin-unused-imports": "^2.0.0",
         "expect-type": "^0.15.0",
+        "graceful-fs": "^4.2.11",
         "jsdom": "^21.1.1",
         "prettier": "^2.8.7",
         "ts-node": "^10.9.1",

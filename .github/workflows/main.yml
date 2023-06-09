@@ -55,3 +55,5 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 30
+            - name: Bundle size diff
+              uses: NejcZdovc/bundle-size-diff@v1.1.0
