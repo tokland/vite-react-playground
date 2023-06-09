@@ -36,6 +36,11 @@ jobs:
 
             - name: bundlephobia-checker
               uses: carlesnunez/check-my-bundlephobia@v1.7.0
+              with:
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  strict: true
+                  threshold: 500
+                  ignore-dev-dependencies: true
 
             - name: Run jest tests
               run: yarn test-unit
@@ -55,5 +60,6 @@ jobs:
                   name: playwright-report
                   path: playwright-report/
                   retention-days: 30
+
             - name: Bundle size diff
               uses: NejcZdovc/bundle-size-diff@v1.1.0
