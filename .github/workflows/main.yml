@@ -39,7 +39,7 @@ jobs:
               with:
                   repo-token: ${{ secrets.GITHUB_TOKEN }}
                   strict: true
-                  threshold: 100
+                  threshold: 1
                   ignore-dev-dependencies: true
 
             - name: Run jest tests
