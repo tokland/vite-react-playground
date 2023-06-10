@@ -20,7 +20,7 @@ test("persistence of values when tab is reloaded", async ({ page }) => {
     await page.goto("/");
 
     await page.getByRole("link", { name: "Counter 1" }).click();
-    await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("0");
+    await expect(text({ in: page, withId: "counter-val2ue" })).resolves.toEqual("0");
 
     await page.getByRole("button", { name: "+1" }).click();
     await expect(text({ in: page, withId: "counter-value" })).resolves.toEqual("1");

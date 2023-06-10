@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "@rimbu/hashed": "^0.9.1",
+        "nano-memoize": "^3.0.11",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "real-cancellable-promise": "^1.1.2",
