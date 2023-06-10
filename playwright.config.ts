@@ -12,7 +12,11 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 1 : undefined,
     reporter: "html",
-    use: { baseURL: serverUrl, trace: "on-first-retry" },
+    use: {
+        baseURL: serverUrl,
+        trace: "on-first-retry",
+        video: "on-first-retry",
+    },
     projects: [
         {
             name: "chromium",

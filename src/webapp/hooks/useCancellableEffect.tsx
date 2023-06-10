@@ -2,6 +2,7 @@ import React from "react";
 
 type Cancel = () => void;
 
+// ts-prune-ignore-next
 export function useCancellableEffect<Args extends any[]>(
     runEffect: (...args: Args) => Cancel,
 ): [(...args: Args) => void, Cancel] {

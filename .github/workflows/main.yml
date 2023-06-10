@@ -36,6 +36,11 @@ jobs:
 
             - name: bundlephobia-checker
               uses: carlesnunez/check-my-bundlephobia@v1.7.0
+              with:
+                  repo-token: ${{ secrets.GITHUB_TOKEN }}
+                  strict: false
+                  threshold: 1
+                  ignore-dev-dependencies: true
 
             - name: Run jest tests
               run: yarn test-unit
@@ -47,7 +52,7 @@ jobs:
               run: npx playwright install --with-deps
 
             - name: Run integration tests (Playwright)
-              run: yarn test-integration
+              run: npx playwright test
 
             - uses: actions/upload-artifact@v3
               if: always()
