@@ -1,20 +1,20 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`App > renders headline 1`] = `
+exports[`App > renders components 1`] = `
 <DocumentFragment>
   <div
     class="App"
   >
     <nav>
-      <span>
-        Home
-      </span>
-      |
       <a
-        href="/counter/1"
+        href="/"
       >
-        Counter 1
+        Home
       </a>
+      |
+      <span>
+        Counter 1
+      </span>
       |
       <a
         href="/counter/2"
@@ -22,6 +22,30 @@ exports[`App > renders headline 1`] = `
         Counter 2
       </a>
     </nav>
+    <div
+      class="App"
+    >
+      <div
+        class="card"
+      >
+        <button
+          data-testid="increment-counter"
+        >
+          -1
+        </button>
+        <span
+          data-testid="counter-value"
+          style="padding: 10px;"
+        >
+          val=2
+        </span>
+        <button
+          data-testid="decrement-counter"
+        >
+          +1
+        </button>
+      </div>
+    </div>
   </div>
 </DocumentFragment>
 `;

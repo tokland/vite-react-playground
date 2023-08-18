@@ -3,9 +3,11 @@
         "react-app",
         "eslint:recommended",
         "plugin:react/recommended",
-        "plugin:@typescript-eslint/recommended"
+        "plugin:@typescript-eslint/recommended",
+        "plugin:testing-library/react"
     ],
     "parser": "@typescript-eslint/parser",
+    "ignorePatterns": ["src/**/snapshots/*.ts"],
     "rules": {
         "no-console": ["warn", { "allow": ["debug", "warn", "error"] }],
         "prefer-const": "warn",
@@ -43,15 +45,25 @@
         "@typescript-eslint/indent": "off",
         "@typescript-eslint/member-delimiter-style": "off",
         "@typescript-eslint/type-annotation-spacing": "off",
+        "@typescript-eslint/no-misused-promises": "warn",
         "no-use-before-define": "off",
         "no-debugger": "warn",
         "no-extra-semi": "off",
         "no-mixed-spaces-and-tabs": "off",
+        "no-useless-rename": "off",
         "react-hooks/rules-of-hooks": "warn",
-        "react-hooks/exhaustive-deps": "warn"
+        "react-hooks/exhaustive-deps": "warn",
+        "testing-library/await-async-query": "error",
+        "testing-library/no-await-sync-query": "error",
+        "testing-library/prefer-screen-queries": "off",
+        "testing-library/no-debugging-utils": "off",
+        "testing-library/no-dom-import": "off"
     },
     "plugins": ["@typescript-eslint", "react-hooks", "unused-imports"],
     "env": {},
+    "parserOptions": {
+        "project": "./tsconfig.json"
+    },
     "settings": {
         "react": {
             "pragma": "React",

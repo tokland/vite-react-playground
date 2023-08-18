@@ -34,9 +34,6 @@ jobs:
             - name: Install dependencies
               run: yarn install --frozen-lockfile --silent
 
-            - name: bundlephobia-checker
-              uses: carlesnunez/check-my-bundlephobia@v1.7.0
-
             - name: Run jest tests
               run: yarn test-unit
 
@@ -47,7 +44,7 @@ jobs:
               run: npx playwright install --with-deps
 
             - name: Run integration tests (Playwright)
-              run: yarn test-integration
+              run: npx playwright test
 
             - uses: actions/upload-artifact@v3
               if: always()

@@ -20,7 +20,7 @@ $ yarn build
 
 ## Notes
 
--   Development tooling: template generator, development server, production builds, unit testing: [vite](https://vitejs.dev/)
+-   Development tooling: development server, production builds, unit testing: [vite](https://vitejs.dev/)
 -   Type safe routing: [type-route](https://github.com/zilch/type-route) (router.ts, Router.tsx)
 -   Lightweight state management: [zustand](https://github.com/pmndrs/zustand) (GenericStore.ts, AppStore.ts)
 -   Cancelable promises: [real-cancellable-promise](https://github.com/srmagura/real-cancellable-promise) (src/domain/entities/generic/Async.ts).
@@ -34,6 +34,6 @@ $ yarn build
 
 ## Clean architecture
 
--   Domain layer: entities, use cases, repository interfaces.
--   Data layer: Repository implementations.
--   Presentation layer: React views.
+-   Domain layer: Entities, Use Cases, Repositories (interfaces).
+-   Data layer: Repositories (implementations).
+-   Presentation layer: React components.

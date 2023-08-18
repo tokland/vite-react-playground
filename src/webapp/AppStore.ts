@@ -1,13 +1,12 @@
 import { buildStore, GetState, SetState } from "./hooks/GenericStore";
-import { Counter } from "../domain/entities/Counter";
 import { Routes } from "./routes";
-import { IndexedSet } from "../domain/entities/generic/IndexedSet";
 import { CompositionRoot } from "../compositionRoot";
 import { Cancel, noCancel } from "../domain/entities/generic/Async";
-import { Ref } from "../domain/entities/Base";
+import { Maybe } from "../domain/utils/ts-utils";
+import * as entities from "../domain/entities";
 
 export interface AppState {
-    counters: IndexedSet<Counter, Ref>;
+    counters: entities.Counters;
 }
 
 export class AppActions {
@@ -41,7 +40,7 @@ export class AppActions {
         }
     }
 
-    private saveCounter(counter: Counter | undefined): Cancel {
+    private saveCounter(counter: Maybe<entities.Counter>): Cancel {
         if (!counter) return noCancel;
 
         this.set(state => ({ counters: state.counters.update(counter) }));

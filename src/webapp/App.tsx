@@ -3,18 +3,15 @@ import React from "react";
 import { RouteProvider } from "./routes";
 import Router from "./Router";
 import { AppActions, AppState, useAppStore } from "./AppStore";
-import { IndexedSet } from "../domain/entities/generic/IndexedSet";
-import { getCompositionRoot } from "../compositionRoot";
-import { Counter } from "../domain/entities/Counter";
-import { getId } from "../domain/entities/Base";
+import { CompositionRoot } from "../compositionRoot";
+import * as entities from "../domain/entities";
 
 const initialState: AppState = {
-    counters: IndexedSet.fromArray([] as Counter[], getId),
-    //counters: Counters.empty(),
+    counters: entities.Counters.empty(),
 };
 
-function App() {
-    const compositionRoot = React.useMemo(() => getCompositionRoot(), []);
+function App(props: { compositionRoot: CompositionRoot }) {
+    const { compositionRoot } = props;
 
     const [AppProvider] = useAppStore(accessors => ({
         initialState: initialState,

@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 *.code-workspace
+
 /test-results/
 /playwright-report/
 /playwright/.cache/
@@ -30,6 +31,8 @@ dist-ssr
 /test-results/
 /playwright-report/
 /playwright/.cache/
+/coverage
+
 /docs
 build
 NOTES*

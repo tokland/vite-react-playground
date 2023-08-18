@@ -2,9 +2,8 @@ import React from "react";
 import { Routes, routes, useRoute } from "./routes";
 import { useAppActions } from "./AppStore";
 import { Element } from "./utils/react";
-
-const HomePage = React.lazy(() => import("./pages/HomePage"));
-const CounterPage = React.lazy(() => import("./pages/CounterPage"));
+import HomePage from "./pages/HomePage";
+import CounterPage from "./pages/CounterPage";
 
 function Router(): Element {
     const route = useRoute();
@@ -18,9 +17,7 @@ function Router(): Element {
                 <NavLink title="Counter 2" route={routes.counter({ id: "2" })} />
             </nav>
 
-            <React.Suspense>
-                <ComponentByRoute route={route} />
-            </React.Suspense>
+            <ComponentByRoute route={route} />
         </>
     );
 }

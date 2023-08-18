@@ -14,6 +14,7 @@ export default ({ mode }) => {
             environment: "jsdom",
             setupFiles: "./src/tests/setup.js",
             exclude: ["node_modules", "src/tests/playwright"],
+            globals: true,
         },
         server: {
             port: parseInt(env.VITE_PORT),

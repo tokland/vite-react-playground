@@ -44,7 +44,7 @@ export function buildStore<State, Actions>() {
     return [useStore, useSelector, useActions] as const;
 }
 
-export function useStoreSelector<State, Actions, U>(
+function useStoreSelector<State, Actions, U>(
     store: Store<State, Actions>,
     selector: (state: State) => U,
     options?: Options,
