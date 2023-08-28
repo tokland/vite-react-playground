@@ -30,7 +30,7 @@ function CounterContents(props: { counter: Counter }): Element {
                 </button>
 
                 <span data-testid="counter-value" style={styles.value}>
-                    val={counter.value}
+                    {counter.value}
                 </span>
 
                 <button data-testid="decrement-counter" onClick={increment}>
