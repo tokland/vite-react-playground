@@ -1,20 +1,42 @@
-import { SaveOptions } from "../data/FixturesTsFileRepository";
-import { Builders } from "./Builders";
-import { Import, Maybe, Snapshot, Test, UpdateMode } from "./entities";
+import { SymbolImport, Maybe, Snapshot, CurrentTest } from "./entities";
+
+// Snapshot
 
 export interface SnapshotRepository {
-    get(options: GetOptions): Promise<Maybe<Snapshot>>;
+    get(options: SnapshotRepositoryGetOptions): Promise<Maybe<Snapshot>>;
+    expectToMatch(options: SnapshotRepositoryExpectOptions): ExpectToMatchResult;
 }
 
-export type GetOptions = { test: Test; type: Import; builders: Builders };
+export type SnapshotRepositoryGetOptions = {
+    test: CurrentTest;
+    type: SymbolImport;
+};
 
-export interface TestLib {
-    getUpdateMode(): UpdateMode;
-    getCurrentTest(): Test;
+export type SnapshotRepositoryExpectOptions = SnapshotRepositoryGetOptions & {
+    snapshot: Snapshot | undefined;
+    currentSnapshot: Snapshot;
+};
+
+export type ExpectToMatchResult = Promise<{
+    snapshotPath: string;
+    contents: string;
+}>;
+
+// Current test
+
+export interface CurrentTestRepository {
+    get(): CurrentTest;
     expectToMatchSnapshot(expectedContents: string, snapshotPath: string): Promise<void>;
     runOnTeardown(block: () => Promise<void>): void;
 }
 
+// Fixtures
+
 export interface FixturesRepository {
-    save(options: SaveOptions): Promise<void>;
+    generate(options: FixturesRepositorySaveOptions): Promise<void>;
 }
+
+export type FixturesRepositorySaveOptions = {
+    filePath: string;
+    fixtures: unknown;
+};

@@ -1,4 +1,4 @@
-import { modules as _modules } from "./manage";
+import { modules as _modules } from "./AppProxySnapshots";
 
 const fixtures = {
     counter: {

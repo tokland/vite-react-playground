@@ -1,26 +1,24 @@
-import { Builders } from "../Builders";
 import {
-    areFunctionCallsEqual,
+    areCallsEqual,
+    DataTypeStore,
     emptyRollback,
     FunctionCall,
-    Import,
+    SymbolImport,
     Maybe,
     Rollback,
-    UpdateMode,
+    CurrentTest,
 } from "../entities";
 import { Snapshot, SnapshotEntry } from "../entities";
-import { SnapshotTsFileRepository } from "../../data/SnapshotTsFileRepository";
-import { TestLibVitest } from "../../data/TestLibVitest";
+import { SnapshotRepository, CurrentTestRepository } from "../repositories";
 
 type ConstructorOptions = {
-    testLib: TestLibVitest;
-    snapshotRepository: SnapshotTsFileRepository;
+    currentTestRepository: CurrentTestRepository;
+    snapshotRepository: SnapshotRepository;
 };
 
 type ExecuteOptions = {
-    builders: Builders;
-    type: Import;
-    modulesImport: Import;
+    dataTypeStore: DataTypeStore;
+    type: SymbolImport;
     rollback: Rollback;
 };
 
@@ -28,8 +26,8 @@ export class GetProxySnapshotUseCase {
     constructor(private options: ConstructorOptions) {}
 
     async execute<Obj extends BaseObj>(obj: Obj, options: ExecuteOptions) {
-        const { snapshotRepository, testLib } = this.options;
-        const test = testLib.getCurrentTest();
+        const { snapshotRepository, currentTestRepository } = this.options;
+        const test = currentTestRepository.get();
         const snapshot = await snapshotRepository.get({ ...options, test });
 
         return new ProxyObject(obj, {
@@ -37,29 +35,31 @@ export class GetProxySnapshotUseCase {
             ...options,
             snapshot: snapshot,
             snapshotRepository: snapshotRepository,
+            test: test,
         }).get();
     }
 }
 
 export type BaseObj = Record<string, any>;
 
-type ProxyObjectOptions = ConstructorOptions & ExecuteOptions & { snapshot: Maybe<Snapshot> };
+type ProxyObjectOptions = ConstructorOptions &
+    ExecuteOptions & { snapshot: Maybe<Snapshot>; test: CurrentTest };
 
 class ProxyObject<Obj extends BaseObj> {
+    private test: CurrentTest;
     private state: State;
-    private builders: Builders;
+    private dataTypeStore: DataTypeStore;
     private snapshot: Maybe<Snapshot>;
-    private updateMode: UpdateMode;
-    private testLib: TestLibVitest;
-    private snapshotRepository: SnapshotTsFileRepository;
+    private currentTestRepository: CurrentTestRepository;
+    private snapshotRepository: SnapshotRepository;
 
     constructor(private obj: Obj, private options: ProxyObjectOptions) {
         this.state = { currentSnapshot: [] };
-        this.updateMode = options.testLib.getUpdateMode();
-        this.testLib = options.testLib;
-        this.builders = options.builders;
+        this.currentTestRepository = options.currentTestRepository;
+        this.dataTypeStore = options.dataTypeStore;
         this.snapshotRepository = options.snapshotRepository;
         this.snapshot = options.snapshot;
+        this.test = options.test;
     }
 
     async get(): Promise<Obj> {
@@ -69,17 +69,15 @@ class ProxyObject<Obj extends BaseObj> {
     }
 
     private setupAutomaticExpectAfterTest() {
-        this.testLib.runOnTeardown(async () => {
+        this.currentTestRepository.runOnTeardown(async () => {
             const { snapshotPath, contents } = await this.snapshotRepository.expectToMatch({
-                test: this.testLib.getCurrentTest(),
+                test: this.currentTestRepository.get(),
                 type: this.options.type,
-                builders: this.builders,
                 snapshot: this.snapshot,
                 currentSnapshot: this.state.currentSnapshot,
-                modulesImport: this.options.modulesImport,
             });
 
-            await this.testLib.expectToMatchSnapshot(contents, snapshotPath);
+            await this.currentTestRepository.expectToMatchSnapshot(contents, snapshotPath);
         });
     }
 
@@ -88,19 +86,15 @@ class ProxyObject<Obj extends BaseObj> {
     }
 
     private async setupRollback() {
-        const { snapshot, updateMode } = this;
-        const isRollbackEnabled = updateMode === "all" || (updateMode === "new" && !snapshot);
+        const { snapshot, test } = this;
+        const isRollbackEnabled =
+            test.updateMode === "all" || (test.updateMode === "new" && !snapshot);
         if (!isRollbackEnabled) return;
 
         const { setup, teardown } = this.options.rollback || emptyRollback;
 
-        if (teardown) {
-            this.testLib.runOnTeardown(teardown);
-        }
-
-        if (setup) {
-            await setup();
-        }
+        if (setup) await setup();
+        if (teardown) this.currentTestRepository.runOnTeardown(teardown);
     }
 
     private proxyObj<Obj extends BaseObj>(obj: Obj, path: string[] = []): Obj {
@@ -128,15 +122,15 @@ class ProxyObject<Obj extends BaseObj> {
     }
 
     private proxyCall(target: any, path: string[], args: any[], fn: Function): Transition {
-        const { snapshot, builders, updateMode, state } = this;
+        const { snapshot, dataTypeStore: dataTypes, test, state } = this;
         const index = state.currentSnapshot.length;
         const expectedEntry = snapshot?.[index];
         const entry: FunctionCall = { type: "call", path, args };
-        const callMatches = expectedEntry && areFunctionCallsEqual(builders, entry, expectedEntry);
+        const callMatches = expectedEntry && areCallsEqual(dataTypes, entry, expectedEntry);
 
-        if (updateMode !== "all" && callMatches) {
+        if (test.updateMode !== "all" && callMatches) {
             return this.addEntry(state, expectedEntry);
-        } else if (updateMode === "all" || (updateMode === "new" && !snapshot)) {
+        } else if (test.updateMode === "all" || (test.updateMode === "new" && !snapshot)) {
             const returns = fn.apply(target, args);
             const call: SnapshotEntry = { type: "call", path, args, returns: returns };
             return this.addEntry(state, call);
@@ -162,7 +156,7 @@ class ProxyObject<Obj extends BaseObj> {
         return {
             type: "error",
             state: { currentSnapshot: newCurrentSnapshot },
-            error: `Snapshot call failed (index=${index}). Fix the snapshot (manually or pressing key u)`,
+            error: `Snapshot call failed`,
         };
     }
 }
