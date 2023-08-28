@@ -12,11 +12,6 @@ import { getProxy } from "./tests/AppProxySnapshots";
 
 export type { CompositionRoot, Repositories, Services };
 
-export function getProxiedRepositories() {
-    const repositories = getAppRepositories();
-    return getProxy(repositories, { type: { name: "Repositories", path: __filename } });
-}
-
 export async function getRepositoriesWithProxiedServices() {
     const services = getServices();
     const proxiedServices = await getProxy(services, {
@@ -26,7 +21,10 @@ export async function getRepositoriesWithProxiedServices() {
 }
 
 export async function getCompositionRootWithProxiedRepos() {
-    const proxiedRepositories = await getProxiedRepositories();
+    const repositories = getAppRepositories();
+    const proxiedRepositories = await getProxy(repositories, {
+        type: { name: "Repositories", path: __filename },
+    });
     return getCompositionRoot(proxiedRepositories);
 }
 

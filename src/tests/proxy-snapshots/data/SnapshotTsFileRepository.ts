@@ -3,10 +3,23 @@ import util from "util";
 import fs from "fs";
 import sanitize from "sanitize-filename";
 
-import { FilePath, Import, Maybe, Snapshot, SnapshotEntry, Test } from "../domain/entities";
+import {
+    FilePath,
+    SymbolImport,
+    Maybe,
+    Snapshot,
+    SnapshotEntry,
+    CurrentTest,
+} from "../domain/entities";
 import { assert } from "../../../domain/utils/ts-utils";
 import { prettify } from "./prettify";
-import { GetOptions, SnapshotRepository } from "../domain/repositories";
+import {
+    SnapshotRepositoryExpectOptions,
+    ExpectToMatchResult,
+    SnapshotRepositoryGetOptions,
+    SnapshotRepository,
+} from "../domain/repositories";
+import { GenericTsSerializerStore } from "./TsSerializerStore";
 
 export function call<Obj>() {
     return function <Getter extends (obj: Obj) => any>(options: CallOptions<Obj, Getter>) {
@@ -14,45 +27,47 @@ export function call<Obj>() {
     };
 }
 
-const exists = util.promisify(fs.exists);
-
 export class SnapshotTsFileRepository implements SnapshotRepository {
-    async get(options: GetOptions): Promise<Maybe<Snapshot>> {
-        const { builders } = options;
+    constructor(private tsSerializer: GenericTsSerializerStore) {}
+
+    async get(options: SnapshotRepositoryGetOptions): Promise<Maybe<Snapshot>> {
+        const { tsSerializer: tsSerializer } = this;
         const snapshotPath = this.getSnapshotPath(options);
+        const exists = util.promisify(fs.exists);
 
         if (!(await exists(snapshotPath))) return;
 
         try {
             const imported = await import(snapshotPath);
-            const modules = builders.getModules();
+            const modules = tsSerializer.getModules();
             const persisted = imported.default(modules) as PersistedSnapshot;
-            return this.getEntityFromPersisted(persisted);
+            return this.getSnapshotEntityFromPersisted(persisted);
         } catch (err: any) {
             console.error(`Error when importing ${snapshotPath}:`, err);
-            this.delete(snapshotPath);
+            await this.delete(snapshotPath);
         }
     }
 
-    public async expectToMatch(options: ExpectOptions) {
-        const { builders, currentSnapshot, snapshot, type, modulesImport: modulesI } = options;
+    public async expectToMatch(options: SnapshotRepositoryExpectOptions): ExpectToMatchResult {
         const snapshotPath = this.getSnapshotPath(options);
-        const index = currentSnapshot.length;
-        const proxyUsed = (snapshot && snapshot.length > 0) || index > 0;
+        const jsCode = await this.getSnapshotContents(options);
+        return { snapshotPath, contents: prettify(jsCode) };
+    }
+
+    private async getSnapshotContents(options: SnapshotRepositoryExpectOptions) {
+        const { currentSnapshot, snapshot, type } = options;
+        const { tsSerializer: tsSerializer } = this;
+        const snapshotPath = this.getSnapshotPath(options);
+        const modulesI = tsSerializer.modulesImport;
+        const proxyUsed = (snapshot && snapshot.length > 0) || currentSnapshot.length > 0;
         const callFnName = call.name;
+        const modulesPath = this.getImportPath(snapshotPath, modulesI.path);
 
-        const getPath = (to: string) => {
-            const projectRoot = process.cwd();
-            const destDir = pathM.isAbsolute(to) ? to : pathM.join(projectRoot, to);
-            const snapshotsDir = pathM.dirname(snapshotPath);
-            return pathM.relative(snapshotsDir, destDir).replace(/\.ts$/, "");
-        };
-
-        const jsCode = proxyUsed
+        return proxyUsed
             ? `
-        import { ${callFnName} } from "${getPath(__filename)}";
-        import { ${type.name} } from "${getPath(type.path)}";
-        import { ${modulesI.name} as ${builders.modulesRef} } from "${getPath(modulesI.path)}";
+        import { ${callFnName} } from "${this.getImportPath(snapshotPath, __filename)}";
+        import { ${type.name} } from "${this.getImportPath(snapshotPath, type.path)}";
+        import { ${modulesI.name} as ${tsSerializer.modulesRef} } from "${modulesPath}";
 
         export default function get() {
             return [
@@ -62,8 +77,8 @@ export class SnapshotTsFileRepository implements SnapshotRepository {
                             async entry => `
                                 ${callFnName}<${type.name}>()({
                                   fn: ${getJsFunctionFromPath(entry.path)},
-                                  args: ${await builders.toJs(entry.args)},
-                                  returns: ${await builders.toJs(entry.returns)},
+                                  args: ${await tsSerializer.toTs(entry.args)},
+                                  returns: ${await tsSerializer.toTs(entry.returns)},
                                 })
                             `,
                         ),
@@ -72,32 +87,36 @@ export class SnapshotTsFileRepository implements SnapshotRepository {
             ];
         }`
             : `export default function get() { return []; }`;
-
-        const contents = prettify(jsCode);
-        return { snapshotPath, contents };
     }
 
-    private getSnapshotPath(options: { test: Test; type: Import }) {
+    private getImportPath(snapshotPath: FilePath, to: FilePath): FilePath {
+        const projectRoot = process.cwd();
+        const destDir = pathM.isAbsolute(to) ? to : pathM.join(projectRoot, to);
+        const snapshotsDir = pathM.dirname(snapshotPath);
+        return pathM.relative(snapshotsDir, destDir).replace(/\.ts$/, "");
+    }
+
+    private getSnapshotPath(options: { test: CurrentTest; type: SymbolImport }) {
         const { test, type } = options;
-        const testFilename = pathM.basename(test.path || "").replace(/.tsx?$/, "");
+        const name = pathM.basename(test.path || "");
+        const testFilename = name.replace(/\.(test|spec)\.tsx?$/, "");
         const parts = [testFilename, type.name, test.name];
         const filename = sanitize(parts.filter(s => s).join("-") + ".ts").replace(/\s+/g, "_");
         const testFolder = pathM.dirname(assert(test.path));
-        return pathM.join(testFolder, "snapshots", filename);
+        return pathM.join(testFolder, "__proxy-snapshots", filename);
     }
 
-    private delete(snapshotPath: FilePath) {
-        if (!fs.existsSync(snapshotPath)) return;
+    private async delete(snapshotPath: FilePath): Promise<boolean> {
+        if (!(await fileExists(snapshotPath))) return false;
         console.debug(`Delete snapshot file: ${snapshotPath}`);
         fs.rmSync(snapshotPath);
+        return true;
     }
 
-    private getEntityFromPersisted(persistedSnapshot: PersistedSnapshot): Snapshot | undefined {
-        if (!persistedSnapshot) return undefined;
-
-        return persistedSnapshot.map((item): SnapshotEntry => {
+    private getSnapshotEntityFromPersisted(items: PersistedSnapshot): Maybe<Snapshot> {
+        return items?.map((item): SnapshotEntry => {
             return {
-                type: "call",
+                type: item.type,
                 path: getPathFromJsFunction(item.fn),
                 args: item.args,
                 returns: item.returns,
@@ -106,11 +125,7 @@ export class SnapshotTsFileRepository implements SnapshotRepository {
     }
 }
 
-type ExpectOptions = GetOptions & {
-    snapshot: Snapshot | undefined;
-    currentSnapshot: Snapshot;
-    modulesImport: Import;
-};
+const fileExists = util.promisify(fs.existsSync);
 
 type PersistedSnapshot = PersistedSnapshotEntry[] | undefined;
 
@@ -127,7 +142,9 @@ type ExtractSignature<Obj, Fn> = Fn extends (obj: Obj) => (...args: infer Args) 
 type CallOptions<Obj, Getter extends (obj: Obj) => any> = Omit<TypedCall<Obj, Getter>, "type">;
 
 function getPathFromJsFunction(fn: Function): string[] {
-    return fn.toString().split("=>")[1]?.split(".").slice(1) || [];
+    const fnBody = fn.toString().split("=>")[1];
+    if (!fnBody) throw new Error(`Cannot extract function body: ${fn.toString()}`);
+    return fnBody.split(".").slice(1) || [];
 }
 
 function getJsFunctionFromPath(path: string[]): string {

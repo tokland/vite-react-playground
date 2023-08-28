@@ -1,18 +1,15 @@
-import { Builders } from "../Builders";
-import { Fixtures, Import } from "../entities";
+import { Fixtures } from "../entities";
 import { FixturesRepository } from "../repositories";
 
 type GenerateFixturesUseCaseOptions = {
     filePath: string;
-    builders: Builders;
     fixtures: Fixtures;
-    modulesRef: Import;
 };
 
 export class GenerateFixturesUseCase {
-    constructor(private repositories: { fixtureRepository: FixturesRepository }) {}
+    constructor(private repositories: { fixturesRepository: FixturesRepository }) {}
 
     execute(options: GenerateFixturesUseCaseOptions) {
-        this.repositories.fixtureRepository.save(options);
+        this.repositories.fixturesRepository.generate(options);
     }
 }

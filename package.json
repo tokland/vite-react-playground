@@ -14,7 +14,7 @@
         "source-map-explorer": "yarn build --sourcemap=true && source-map-explorer --no-border-checks --only-mapped build/assets/*js",
         "start": "vite --strictPort",
         "test": "yarn test-unit && yarn test-integration",
-        "test-fixtures-generate": "yarn run-script src/tests/manage.ts generate",
+        "test-fixtures-generate": "yarn run-script src/tests/manage.ts generate-fixtures",
         "test-snapshots-delete": "yarn run-script src/tests/manage.ts delete",
         "test-unit": "vitest run --reporter=basic",
         "test-unit-watch": "vitest watch",
@@ -23,7 +23,6 @@
     },
     "dependencies": {
         "@rimbu/hashed": "^0.9.1",
-        "nano-memoize": "^3.0.11",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "real-cancellable-promise": "^1.1.2",

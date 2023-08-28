@@ -1,12 +1,22 @@
-import { Builders } from "./Builders";
+// Generic
 
 export type Maybe<T> = T | undefined;
 
+export type FilePath = string;
+
+export type SymbolImport = { name: string; path: FilePath };
+
+// Current Test
+
+export type CurrentTest = {
+    path: FilePath;
+    name: string;
+    updateMode: UpdateMode;
+};
+
 export type UpdateMode = "new" | "all" | "none";
 
-export type Test = { path: FilePath; name: string };
-
-export type FilePath = string;
+// Snapshots
 
 export type Snapshot = SnapshotEntry[];
 
@@ -20,17 +30,9 @@ export type FunctionCall = {
 
 type FunctionCallWithResult = FunctionCall & { returns: unknown };
 
-export function areFunctionCallsEqual(
-    builders: Builders,
-    entry1: FunctionCall,
-    entry2: FunctionCall,
-): boolean {
-    return (
-        entry1.type === entry2.type &&
-        builders.isEqual(entry1.path, entry2.path) &&
-        builders.isEqual(entry1.args, entry2.args)
-    );
-}
+export type Fixtures = object;
+
+// Rollback
 
 export type Rollback = {
     setup?(): Promise<void>;
@@ -42,6 +44,33 @@ export const emptyRollback: Rollback = {
     teardown: undefined,
 };
 
-export type Import = { name: string; path: FilePath };
+// Data Types
 
-export type Fixtures = unknown;
+export type DataType<T> = {
+    hasType(obj: unknown): boolean;
+    isEqual(obj1: T, obj2: T, dataTypeStore: DataTypeStore): boolean;
+};
+
+export function areCallsEqual(
+    dataTypeStore: DataTypeStore,
+    call1: FunctionCall,
+    call2: FunctionCall,
+): boolean {
+    return (
+        call1.type === call2.type &&
+        dataTypeStore.isEqual(call1.path, call2.path) &&
+        dataTypeStore.isEqual(call1.args, call2.args)
+    );
+}
+
+export class DataTypeStore {
+    constructor(protected dataTypes: Array<DataType<unknown>>) {}
+
+    isEqual(obj1: unknown, obj2: unknown): boolean {
+        const dataType = this.dataTypes.find(dataType => {
+            return dataType.hasType(obj1) && dataType.hasType(obj2);
+        });
+
+        return dataType ? dataType.isEqual(obj1, obj2, this) : false;
+    }
+}

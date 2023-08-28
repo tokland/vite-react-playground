@@ -1,9 +1,10 @@
 import path from "path";
 import { getAppRepositories } from "../compositionRoot";
-import { builders, modules } from "./AppProxySnapshots";
+import { tsSerializerStore } from "./AppProxySnapshots";
+import { FixturesTsFileRepository } from "./proxy-snapshots/data/FixturesTsFileRepository";
 import { cli } from "./proxy-snapshots/scripts/cli";
 
-async function buildFixtures() {
+async function getFixtures() {
     const repositories = getAppRepositories();
 
     return {
@@ -16,11 +17,8 @@ async function buildFixtures() {
 
 if (require.main === module) {
     cli({
-        builders: builders,
-        getFixtures: buildFixtures,
         filePath: path.join(__dirname, "fixtures.ts"),
-        modulesRef: { path: __filename, name: "modules" },
+        getFixtures: getFixtures,
+        fixturesRepository: new FixturesTsFileRepository(tsSerializerStore),
     });
 }
-
-export { modules };

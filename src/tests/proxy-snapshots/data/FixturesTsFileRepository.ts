@@ -1,29 +1,24 @@
 import path from "path";
 import fs from "fs";
 import util from "util";
-import { Builders } from "../domain/Builders";
+import { GenericTsSerializerStore } from "./TsSerializerStore";
 import { prettify } from "./prettify";
-import { FixturesRepository } from "../domain/repositories";
-import { Import } from "../domain/entities";
-
-const writeFile = util.promisify(fs.writeFile);
-
-export type SaveOptions = {
-    filePath: string;
-    builders: Builders;
-    fixtures: unknown;
-    modulesRef: Import;
-};
+import { FixturesRepository, FixturesRepositorySaveOptions } from "../domain/repositories";
 
 export class FixturesTsFileRepository implements FixturesRepository {
-    async save(options: SaveOptions): Promise<void> {
-        const { filePath, builders, fixtures, modulesRef } = options;
-        const modulesPath = getPath(filePath, modulesRef.path);
+    constructor(private tsSerializer: GenericTsSerializerStore) {}
+
+    async generate(options: FixturesRepositorySaveOptions): Promise<void> {
+        const { tsSerializer: tsSerializer } = this;
+        const { filePath, fixtures } = options;
+        const { modulesImport: modulesI } = this.tsSerializer;
+        const modulesPath = getPath(filePath, modulesI.path);
+        const writeFile = util.promisify(fs.writeFile);
 
         const jsCode = `
-            import { ${modulesRef.name} as ${builders.modulesRef} } from "${modulesPath}";
+            import { ${modulesI.name} as ${tsSerializer.modulesRef} } from "${modulesPath}";
     
-            const fixtures = ${await builders.toJs(fixtures)};
+            const fixtures = ${await tsSerializer.toTs(fixtures)};
     
             export default fixtures;
         `;

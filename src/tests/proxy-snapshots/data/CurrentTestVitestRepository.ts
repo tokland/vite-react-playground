@@ -1,24 +1,18 @@
 import { ExpectStatic } from "vitest";
 import { afterThis } from "./afterThis";
-import { Test, UpdateMode } from "../domain/entities";
-import { TestLib } from "../domain/repositories";
+import { CurrentTest, UpdateMode } from "../domain/entities";
+import { CurrentTestRepository } from "../domain/repositories";
 
-export class TestLibVitest implements TestLib {
+export class CurrentTestVitestRepository implements CurrentTestRepository {
     constructor(private expect: ExpectStatic) {}
 
-    getUpdateMode(): UpdateMode {
-        const snapshotState = this.expect.getState().snapshotState as unknown;
-        const state = snapshotState as { _updateSnapshot: UpdateMode };
-        return state._updateSnapshot;
-    }
-
-    getCurrentTest(): Test {
+    get(): CurrentTest {
         const state = this.expect.getState();
         const testPath = state.testPath;
         const parts = (state.currentTestName || "").split(" > ");
         const name = parts[parts.length - 1];
         if (!name || !testPath) throw new Error("Cannot get current test");
-        return { path: testPath, name: name };
+        return { path: testPath, name: name, updateMode: this.getUpdateMode() };
     }
 
     expectToMatchSnapshot(expectedContents: string, snapshotPath: string) {
@@ -27,5 +21,11 @@ export class TestLibVitest implements TestLib {
 
     runOnTeardown(block: () => Promise<void>) {
         return afterThis(block);
+    }
+
+    private getUpdateMode(): UpdateMode {
+        const snapshotState = this.expect.getState().snapshotState as unknown;
+        const state = snapshotState as { _updateSnapshot: UpdateMode };
+        return state._updateSnapshot;
     }
 }

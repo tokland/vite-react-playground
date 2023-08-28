@@ -1,21 +1,18 @@
-import { Builders } from "../domain/Builders";
-import { Fixtures, Import } from "../domain/entities";
+import { Fixtures } from "../domain/entities";
 import { GenerateFixturesUseCase } from "../domain/usecases/GenerateFixturesUseCase";
-import { FixturesTsFileRepository } from "../data/FixturesTsFileRepository";
+import { FixturesRepository } from "../domain/repositories";
 
 export async function cli(options: {
-    builders: Builders;
     filePath: string;
     getFixtures: () => Promise<Fixtures>;
-    modulesRef: Import;
+    fixturesRepository: FixturesRepository;
 }) {
     const { getFixtures } = options;
     const [command] = process.argv.slice(2);
-    const fixtureRepository = new FixturesTsFileRepository();
 
     switch (command) {
-        case "generate": {
-            return new GenerateFixturesUseCase({ fixtureRepository }).execute({
+        case "generate-fixtures": {
+            return new GenerateFixturesUseCase(options).execute({
                 ...options,
                 fixtures: await getFixtures(),
             });
