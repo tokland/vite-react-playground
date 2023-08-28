@@ -37,7 +37,7 @@ exports[`App > renders components 1`] = `
           data-testid="counter-value"
           style="padding: 10px;"
         >
-          val=2
+          2
         </span>
         <button
           data-testid="decrement-counter"
