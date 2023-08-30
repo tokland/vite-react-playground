@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, routes, useRoute } from "./routes";
+import { AppRoute, routes, useRoute } from "./routes";
 import { useAppActions } from "./AppStore";
 import { Element } from "./utils/react";
 import HomePage from "./pages/HomePage";
@@ -22,7 +22,7 @@ function Router(): Element {
     );
 }
 
-function NavLink<T extends Routes>(props: { title: string; route: T }): Element {
+function NavLink<Route extends AppRoute>(props: { title: string; route: Route }): Element {
     const route = useRoute();
     const isCurrent = props.route.href === route.href;
 
@@ -38,7 +38,7 @@ function useRoutesLoading() {
     }, [actions, route]);
 }
 
-function ComponentByRoute(props: { route: Routes }): Element {
+function ComponentByRoute(props: { route: AppRoute }): Element {
     const { route } = props;
 
     switch (route.name) {

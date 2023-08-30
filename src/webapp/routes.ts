@@ -9,4 +9,4 @@ export const {
     counter: defineRoute({ id: param.path.string }, params => `/counter/${params.id}`),
 });
 
-export type Routes = Route<typeof routes>;
+export type AppRoute = Route<typeof routes>;

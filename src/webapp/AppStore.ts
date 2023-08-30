@@ -1,5 +1,5 @@
 import { buildStore, GetState, SetState } from "./hooks/GenericStore";
-import { Routes } from "./routes";
+import { AppRoute } from "./routes";
 import { CompositionRoot } from "../compositionRoot";
 import { Cancel, noCancel } from "../domain/entities/generic/Async";
 import { Maybe } from "../domain/utils/ts-utils";
@@ -30,7 +30,7 @@ export class AppActions {
         return this.saveCounter(counter?.add(-1));
     }
 
-    loadByRoute(route: Routes) {
+    loadByRoute(route: AppRoute) {
         switch (route.name) {
             case "counter":
                 return this.compositionRoot.counters.get.execute(route.params.id).run(
