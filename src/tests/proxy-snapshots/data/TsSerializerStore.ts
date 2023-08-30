@@ -6,8 +6,10 @@ interface TsSerializer<T, Modules> extends DataType<T> {
     modules: Modules;
     toTs(
         obj: T,
-        serializer: GenericTsSerializerStore,
-        modulesRef: Record<keyof Modules, keyof Modules>,
+        options: {
+            serializer: GenericTsSerializerStore;
+            modulesRef: Record<keyof Modules, keyof Modules>;
+        },
     ): StringP;
 }
 
@@ -62,7 +64,8 @@ const dateSerializer = serializer<Date>()({
 const promiseSerializer = serializer<Promise<unknown>>()({
     hasType: obj => !!obj && obj.constructor === Promise,
     isEqual: () => false, // We cannot compare promises without awaiting for the result
-    toTs: async (promise, serializer) => "Promise.resolve(" + serializer.toTs(await promise) + ")",
+    toTs: async (promise, { serializer }) =>
+        "Promise.resolve(" + serializer.toTs(await promise) + ")",
 });
 
 const arraySerializer = serializer<Array<unknown>>()({
@@ -70,7 +73,7 @@ const arraySerializer = serializer<Array<unknown>>()({
     isEqual: (values1, values2, serializer) =>
         values1.length === values2.length &&
         values1.every((val1, idx) => serializer.isEqual(val1, values2[idx])),
-    toTs: async (obj, serializer) => {
+    toTs: async (obj, { serializer }) => {
         const values = await Promise.all(obj.map(x => serializer.toTs(x)));
         return `[${values.join(",")}]`;
     },
@@ -86,7 +89,7 @@ const setSerializer = serializer<Set<unknown>>()({
             values1.some(x1 => values2.some(x2 => serializer.isEqual(x1, x2)))
         );
     },
-    toTs: async (set, serializer) => {
+    toTs: async (set, { serializer }) => {
         const arrayJs = await serializer.toTs(Array.from(set));
         return `new Set(${arrayJs})`;
     },
@@ -97,7 +100,7 @@ const mapSerializer = serializer<Map<unknown, unknown>>()({
     isEqual: (map1, map2, serializer) =>
         map1.size === map2.size &&
         Array.from(map1).every(([k1, v1]) => serializer.isEqual(v1, map2.get(k1))),
-    toTs: async (map, serializer) => {
+    toTs: async (map, { serializer }) => {
         const pairs = await serializer.toTs(Array.from(map));
         return `new Map(${pairs})`;
     },
@@ -114,7 +117,7 @@ const objectSerializer = serializer<Array<unknown>>()({
             keys1.every(key1 => serializer.isEqual(obj1[key1], obj2[key1]))
         );
     },
-    toTs: async (obj, serializer) => {
+    toTs: async (obj, { serializer }) => {
         const pairs = Reflect.ownKeys(obj).map(async key => {
             if (typeof key === "symbol")
                 throw new Error(`Symbol keys are not supported: ${key.toString()}`);
@@ -160,7 +163,7 @@ export class TsSerializerStore<S extends TsSerializer<any, any>> extends DataTyp
         const serializer = this.serializers.find(serializer => serializer.hasType(obj));
         if (!serializer) throw new Error(`No serializer found: ${obj}`);
         const modulesRef = this.getModulesRef(serializer);
-        return serializer.toTs(obj, this, modulesRef);
+        return serializer.toTs(obj, { serializer: this, modulesRef: modulesRef });
     }
 
     getModules(): UnionToIntersection<S["modules"]> {

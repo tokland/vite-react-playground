@@ -19,7 +19,7 @@ type ConstructorOptions = {
 type ExecuteOptions = {
     dataTypeStore: DataTypeStore;
     type: SymbolImport;
-    rollback: Rollback;
+    rollback?: Rollback;
 };
 
 export class GetProxySnapshotUseCase {

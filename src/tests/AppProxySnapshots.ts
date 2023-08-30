@@ -14,13 +14,13 @@ import {
 import { CurrentTestVitestRepository } from "./proxy-snapshots/data/CurrentTestVitestRepository";
 import { SnapshotTsFileRepository } from "./proxy-snapshots/data/SnapshotTsFileRepository";
 import * as entities from "../domain/entities";
-import { emptyRollback, SymbolImport, Rollback } from "./proxy-snapshots/domain/entities";
+import { SymbolImport, Rollback } from "./proxy-snapshots/domain/entities";
 
 const asyncSerializer = serializer<Async<any>>()({
     hasType: obj => !!obj && Object.getPrototypeOf(obj) === Async.prototype,
     isEqual: (_obj1, _obj2) => false,
     modules: { Async },
-    toTs: async (obj, serializer, modulesRef) => {
+    toTs: async (obj, { serializer, modulesRef }) => {
         const value = await obj.toPromise();
         const code = await serializer.toTs(value);
         return `${modulesRef.Async}.success(${code})`;
@@ -32,14 +32,13 @@ const structSerializer = serializer<GenericStructInstance>()({
     isEqual: (obj1, obj2, serializer) =>
         serializer.isEqual(obj1._getAttributes(), obj2._getAttributes()),
     modules: entities,
-    toTs: async (obj, serializer, modulesRef) => {
+    toTs: async (obj, { serializer, modulesRef }) => {
         const modulesRefAsString: Record<string, string> = modulesRef;
         const className = obj.constructor.name;
         const classRef = modulesRefAsString[className];
         if (!classRef) throw new Error(`Struct not found: ${className}`);
         const attributes = obj._getAttributes();
-        const attrsTs = await serializer.toTs(attributes);
-        return `${classRef}.create(${attrsTs})`;
+        return `${classRef}.create(${await serializer.toTs(attributes)})`;
     },
 });
 
@@ -59,7 +58,6 @@ type GetProxyOptions = { type: SymbolImport; rollback?: Rollback };
 
 export async function getProxy<Obj extends BaseObj>(obj: Obj, options: GetProxyOptions) {
     return getProxySnapshotUseCase.execute(obj, {
-        rollback: emptyRollback,
         dataTypeStore: tsSerializerStore.dataTypeStore,
         ...options,
     });
