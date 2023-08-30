@@ -8,7 +8,7 @@
         "check-code": "yarn lint && yarn test",
         "generate-docs": "typedoc --entryPointStrategy expand ./src",
         "lint": "eslint src",
-        "lint-unused": "ts-prune --ignore '__tests/snapshots|compositionRootTest|\\.snapshot.ts'",
+        "lint-unused": "ts-prune --ignore '__tests/__proxy-snapshots|compositionRootTest|\\.snapshot.ts'",
         "lint-all": "yarn lint && yarn lint-unused",
         "run-script": "ts-node -P src/scripts",
         "source-map-explorer": "yarn build --sourcemap=true && source-map-explorer --no-border-checks --only-mapped build/assets/*js",

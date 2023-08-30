@@ -11,7 +11,7 @@ import {
     BaseObj,
     GetProxySnapshotUseCase,
 } from "./proxy-snapshots/domain/usecases/GetProxySnapshotUseCase";
-import { CurrentTestVitestRepository } from "./proxy-snapshots/data/CurrentTestVitestRepository";
+import { CurrentTestVitestClient } from "./proxy-snapshots/data/CurrentTestVitestClient";
 import { SnapshotTsFileRepository } from "./proxy-snapshots/data/SnapshotTsFileRepository";
 import * as entities from "../domain/entities";
 import { SymbolImport, Rollback } from "./proxy-snapshots/domain/entities";
@@ -50,7 +50,7 @@ export const tsSerializerStore = new TsSerializerStore(
 export const modules = tsSerializerStore.getModules();
 
 const getProxySnapshotUseCase = new GetProxySnapshotUseCase({
-    currentTestRepository: new CurrentTestVitestRepository(expect),
+    currentTestClient: new CurrentTestVitestClient(expect),
     snapshotRepository: new SnapshotTsFileRepository(tsSerializerStore),
 });
 

@@ -1,9 +1,9 @@
 import { ExpectStatic } from "vitest";
 import { afterThis } from "./afterThis";
 import { CurrentTest, UpdateMode } from "../domain/entities";
-import { CurrentTestRepository } from "../domain/repositories";
+import { CurrentTestClient } from "../domain/repositories";
 
-export class CurrentTestVitestRepository implements CurrentTestRepository {
+export class CurrentTestVitestClient implements CurrentTestClient {
     constructor(private expect: ExpectStatic) {}
 
     get(): CurrentTest {

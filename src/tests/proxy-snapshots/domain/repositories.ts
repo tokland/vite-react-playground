@@ -24,7 +24,7 @@ export type ExpectToMatchResult = Promise<{
 
 // Current test
 
-export interface CurrentTestRepository {
+export interface CurrentTestClient {
     get(): CurrentTest;
     expectToMatchSnapshot(expectedContents: string, snapshotPath: string): Promise<void>;
     runOnTeardown(block: () => Promise<void>): void;

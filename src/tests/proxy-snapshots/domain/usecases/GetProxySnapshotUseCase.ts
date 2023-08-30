@@ -9,10 +9,10 @@ import {
     CurrentTest,
 } from "../entities";
 import { Snapshot, SnapshotEntry } from "../entities";
-import { SnapshotRepository, CurrentTestRepository } from "../repositories";
+import { SnapshotRepository, CurrentTestClient } from "../repositories";
 
 type ConstructorOptions = {
-    currentTestRepository: CurrentTestRepository;
+    currentTestClient: CurrentTestClient;
     snapshotRepository: SnapshotRepository;
 };
 
@@ -26,8 +26,8 @@ export class GetProxySnapshotUseCase {
     constructor(private options: ConstructorOptions) {}
 
     async execute<Obj extends BaseObj>(obj: Obj, options: ExecuteOptions) {
-        const { snapshotRepository, currentTestRepository } = this.options;
-        const test = currentTestRepository.get();
+        const { snapshotRepository, currentTestClient } = this.options;
+        const test = currentTestClient.get();
         const snapshot = await snapshotRepository.get({ ...options, test });
 
         return new ProxyObject(obj, {
@@ -50,12 +50,12 @@ class ProxyObject<Obj extends BaseObj> {
     private state: State;
     private dataTypeStore: DataTypeStore;
     private snapshot: Maybe<Snapshot>;
-    private currentTestRepository: CurrentTestRepository;
+    private currentTestClient: CurrentTestClient;
     private snapshotRepository: SnapshotRepository;
 
     constructor(private obj: Obj, private options: ProxyObjectOptions) {
         this.state = { currentSnapshot: [] };
-        this.currentTestRepository = options.currentTestRepository;
+        this.currentTestClient = options.currentTestClient;
         this.dataTypeStore = options.dataTypeStore;
         this.snapshotRepository = options.snapshotRepository;
         this.snapshot = options.snapshot;
@@ -69,15 +69,15 @@ class ProxyObject<Obj extends BaseObj> {
     }
 
     private setupAutomaticExpectAfterTest() {
-        this.currentTestRepository.runOnTeardown(async () => {
+        this.currentTestClient.runOnTeardown(async () => {
             const { snapshotPath, contents } = await this.snapshotRepository.expectToMatch({
-                test: this.currentTestRepository.get(),
+                test: this.currentTestClient.get(),
                 type: this.options.type,
                 snapshot: this.snapshot,
                 currentSnapshot: this.state.currentSnapshot,
             });
 
-            await this.currentTestRepository.expectToMatchSnapshot(contents, snapshotPath);
+            await this.currentTestClient.expectToMatchSnapshot(contents, snapshotPath);
         });
     }
 
@@ -94,7 +94,7 @@ class ProxyObject<Obj extends BaseObj> {
         const { setup, teardown } = this.options.rollback || emptyRollback;
 
         if (setup) await setup();
-        if (teardown) this.currentTestRepository.runOnTeardown(teardown);
+        if (teardown) this.currentTestClient.runOnTeardown(teardown);
     }
 
     private proxyObj<Obj extends BaseObj>(obj: Obj, path: string[] = []): Obj {
