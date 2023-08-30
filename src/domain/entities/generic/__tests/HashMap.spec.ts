@@ -44,6 +44,11 @@ describe("conversors", () => {
             ["c", 3],
         ]);
     });
+
+    test("toObj", () => {
+        const obj = mapAbc123.toObj();
+        expect(obj).toEqual({ a: 1, b: 2, c: 3 });
+    });
 });
 
 describe("key/value inclusion", () => {

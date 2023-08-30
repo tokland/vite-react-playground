@@ -102,4 +102,8 @@ export class HashMap<K, V> {
     forEach(fn: (pair: readonly [K, V]) => void): void {
         this._map.forEach(fn);
     }
+
+    toObj(): K extends keyof any ? Record<K, V> : never {
+        return Object.fromEntries(this._map.toArray());
+    }
 }
