@@ -8,6 +8,7 @@ import CounterPage from "./pages/CounterPage";
 function Router(): Element {
     const route = useRoute();
     useRoutesLoading();
+    console.debug(`VITE_EXAMPLE1=${import.meta.env.VITE_EXAMPLE1}`);
 
     return (
         <>
