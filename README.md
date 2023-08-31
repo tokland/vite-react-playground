@@ -28,7 +28,6 @@ $ yarn build
 -   Code linting: [eslint](https://eslint.org) and [ts-prune](https://github.com/nadeesha/ts-prune).
 -   Unit testing: [vitest](https://vitest.dev)
 -   End-to-end testing: [playwright](https://playwright.dev) (src/tests/playwright)
--   Code-Splitting: Use React.lazy + React.suspense (src/webapp/Router.tsx)
 
 ## Clean architecture
 
@@ -41,37 +40,35 @@ $ yarn build
 
 ### Introduction
 
-Clean Architecture promotes Dependency Injection, which allows to easily isolate a System Under Test (SUT) from its external dependencies. Two strategies are typically employed:
+Clean Architecture promotes Dependency Injection, which allows to isolate easily a System Under Test (SUT) from its external dependencies. Two strategies are typically employed:
 
-1. Stubs: Write fake implementations of the dependencies. Cons: lots of boilerplate; they must be created manually and kept up-to-date to changes of the SUT or the dependencies. Also, coding stateful stubs are not trivial, and they may introduce bugs of their own.
+1. Stubs: Fake implementations of the dependencies. Cons: boilerplate; stubs must be created manually and kept up-to-date to changes of the SUT or the dependencies. Also, coding realistic stateful stubs is not trivial, and they may introduce bugs of their own.
 
-2. Mocks: Instead of writing real implementations, we pass around facade objects that just define which calls (arguments + result) are expected. It's usually more convenient than writing static stubs, but still tedious to keep them up-to-date with the implementation.
+2. Mocks: Instead of writing real implementations, we just define which calls (arguments + result) are expected on the dependencies. It's usually more convenient than writing static stubs, but still tedious to keep them up-to-date with the implementation.
 
 ## Proposed solution
 
-Auto-generated mocks using file snapshots. On development -and only on creation and update when requested- snapshots are created by making real calls to the external systems. These snapshots contain all the details of the calls (function + arguments + return value).
+Auto-generated mocks using file snapshots. On development -and only on creation or update when requested- snapshots are created by performing real calls to the external systems. These snapshots contain all the details of the calls (function + arguments + return value).
 
 ### Implementation
 
--   It uses [ES6 proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) to intercept calls.
+-   [ES6 proxies](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) to intercept calls.
 
--   It uses [File Snaphots](https://vitest.dev/api/expect.html#tomatchfilesnapshot), integrated with the snapshot infrastructure of the testing library.
+-   [File Snaphots](https://vitest.dev/api/expect.html#tomatchfilesnapshot), integrated with the snapshot infrastructure of the testing library.
 
 -   The object to proxy can be arbitrarily nested (only methods/functions are proxied).
 
--   Order of calls is relevant: a snapshot is valid only if the SUT calls all the entries (same function/arguments) in the exact same order.
+-   The order of calls is relevant: a snapshot is valid only if the SUT calls all the entries (same function/arguments) in the exact same order.
 
 -   Rollback functions (setup/teardown) are executed only when the snapshots are being updated.
 
--   Snapshots are stored as fully-typed TS files, so breaking changes in the dependencies is easily detectable.
+-   Snapshots are stored as fully-typed TS files, so changes in the dependencies are easily detectable.
 
 -   The expectation is automatically run after the test run (on teardown).
 
--   We use TS-code serialization to build the snapshots files.
-
 ### Infrastructure
 
-We need the ability to _compare_ and _serialize_ any value used in the snapshot (both arguments and return values). As Javascript does not provide this infrastructure out-of-the box, we must define these serializers manually. Serializers for the most common JS data structure are provided, so we'll only have to write them for custom classes of our application. A serializer for a position class type might look like this:
+We need the ability to _compare_ and _serialize_ any value used in the snapshots (both arguments and return values). As Javascript does not provide this infrastructure out-of-the box, we must define these serializers manually. Serializers for the most common JS data structure are provided, so we'll only have to write them for custom classes of our application. A serializer for a position class type might look like this:
 
 ```typescript
 // Entity
