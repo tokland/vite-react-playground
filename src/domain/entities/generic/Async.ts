@@ -64,7 +64,18 @@ export class Async<T> {
         });
     }
 
-    // TODO: joinObj
+    static joinObj<Obj extends Record<string, Async<any>>>(
+        obj: Obj,
+        options: ParallelOptions = { concurrency: 1 },
+    ): Async<{ [K in keyof Obj]: Obj[K] extends Async<infer U> ? U : never }> {
+        const asyncs = Object.values(obj);
+
+        return Async.parallel(asyncs, options).map(values => {
+            const keys = Object.keys(obj);
+            const pairs = keys.map((key, idx) => [key, values[idx]]);
+            return Object.fromEntries(pairs);
+        });
+    }
 
     static sequential<T>(asyncs: Async<T>[]): Async<T[]> {
         return Async.block(async $ => {
@@ -74,7 +85,7 @@ export class Async<T> {
         });
     }
 
-    static parallel<T>(asyncs: Async<T>[], options: { concurrency: number }): Async<T[]> {
+    static parallel<T>(asyncs: Async<T>[], options: ParallelOptions): Async<T[]> {
         return new Async(() =>
             buildCancellablePromise(async $ => {
                 const queue: CancellablePromise<void>[] = [];
@@ -138,3 +149,5 @@ interface CaptureAsync {
     <T>(async: Async<T>): Promise<T>;
     error: <T>(message: string) => Promise<T>;
 }
+
+type ParallelOptions = { concurrency: number };

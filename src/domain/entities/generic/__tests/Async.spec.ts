@@ -166,6 +166,29 @@ describe("join2", () => {
     });
 });
 
+describe("joinObj", () => {
+    it("returns an async with the object of values", () => {
+        const join$ = Async.joinObj({
+            n: Async.success(123),
+            s: Async.success("hello"),
+        });
+
+        expect(join$.toPromise()).resolves.toEqual({
+            n: 123,
+            s: "hello",
+        });
+    });
+
+    it("returns an error if some of the inputs is an error", () => {
+        const join$ = Async.joinObj({
+            n: Async.success(123),
+            s: Async.error("Some error"),
+        });
+
+        expect(join$.toPromise()).rejects.toThrow("Some error");
+    });
+});
+
 describe("sequential", () => {
     it("returns an async containing all the values as an array", () => {
         const values$ = Async.sequential([Async.success(1), Async.success(2), Async.success(3)]);
