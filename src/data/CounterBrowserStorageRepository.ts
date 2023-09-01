@@ -9,6 +9,7 @@ export class CounterBrowserStorageRepository implements CounterRepository {
 
     get(id: string): Async<Counter> {
         return Async.block(async $ => {
+            // console.log(await $(getJSON("https://jsonplaceholder.typicode.com/todos/1")));
             const key = this.getKey(id);
             const value = this.storage.get<number>(key);
             const counter: Counter = new Counter({ id, value: value ?? 0 });
@@ -29,4 +30,17 @@ export class CounterBrowserStorageRepository implements CounterRepository {
     private getKey(id: string): string {
         return `counter-${id}`;
     }
+}
+
+function _getJSON<U>(url: string): Async<U> {
+    const abortController = new AbortController();
+
+    return Async.fromComputation((resolve, reject) => {
+        fetch(url, { method: "get", signal: abortController.signal })
+            .then(res => res.json() as U)
+            .then(resolve)
+            .catch(reject);
+
+        return () => abortController.abort();
+    });
 }
