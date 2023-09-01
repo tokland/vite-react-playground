@@ -1,50 +1,70 @@
-import { HashMap as RimbuHashMap } from "@rimbu/hashed";
 import { Collection } from "./Collection";
+import {
+    HashMap as ImmutableHashMap,
+    empty,
+    fromObject,
+    get,
+    set,
+    has,
+    keys,
+    values,
+    entries,
+    map,
+    filter,
+    fromIterable,
+    forEach,
+    toObject,
+} from "typed-immutable-map";
+
+/* A fast and persistent (immutable) Hash Map.
+
+    Keys can be of any type, including objects or arrays, much like ES2015 Maps.
+ */
 
 export class HashMap<K, V> {
     /* Constructors */
 
-    protected constructor(protected _map: RimbuHashMap<K, V>) {}
+    protected constructor(protected _map: ImmutableHashMap<K, V>) {}
 
     static empty<K, V>() {
-        return new HashMap<K, V>(RimbuHashMap.empty());
+        return new HashMap<K, V>(empty());
     }
 
     static fromPairs<K, V>(pairs: Array<[K, V]>): HashMap<K, V> {
-        return new HashMap(RimbuHashMap.from(pairs));
+        return new HashMap(fromIterable(pairs));
     }
 
     static fromObject<K extends keyof any, V>(obj: Record<K, V>) {
-        return HashMap.fromPairs<K, V>(Object.entries(obj) as Array<[K, V]>);
+        return new HashMap<K, V>(fromObject(obj));
     }
 
     /* Methods */
 
     get(key: K): V | undefined {
-        return this._map.get(key);
+        return get(key, this._map);
     }
 
     set(key: K, value: V): HashMap<K, V> {
-        const updated = this._map.set(key, value);
+        const updated = set(key, value, this._map);
         return new HashMap(updated);
     }
 
     equals(map: HashMap<K, V>): boolean {
         const mapsHaveEqualSize = () => this.size === map.size;
-        const allValuesEqual = () => this._map.streamKeys().every(k => this.get(k) === map.get(k));
+        const allValuesEqual = () => this.keys().every(k => this.get(k) === map.get(k));
         return mapsHaveEqualSize() && allValuesEqual();
     }
 
     keys(): K[] {
-        return this._map.streamKeys().toArray();
+        return Array.from(keys(this._map));
     }
 
     values(): V[] {
-        return this._map.streamValues().toArray();
+        return Array.from(values(this._map));
     }
 
     toPairs(): Array<[K, V]> {
-        return this._map.toArray() as Array<[K, V]>;
+        return Array.from(entries(this._map));
     }
 
     get size(): number {
@@ -52,19 +72,19 @@ export class HashMap<K, V> {
     }
 
     pick(keys: K[]): HashMap<K, V> {
-        return new HashMap(this._map.filter(([key, _value]) => keys.includes(key)));
+        return this.pickBy(([key, _value]) => keys.includes(key));
     }
 
     pickBy(pred: (pair: readonly [K, V]) => boolean): HashMap<K, V> {
-        return new HashMap(this._map.filter(pair => pred(pair)));
+        return new HashMap(filter((value, key) => pred([key!, value]), this._map));
     }
 
     omit(keys: K[]): HashMap<K, V> {
-        return new HashMap(this._map.filter(([key, _value]) => !keys.includes(key)));
+        return this.pickBy(([key, _value]) => !keys.includes(key));
     }
 
     omitBy(pred: (pair: readonly [K, V]) => boolean): HashMap<K, V> {
-        return new HashMap(this._map.filter(pair => !pred(pair)));
+        return this.pickBy(([key, value]) => !pred([key, value]));
     }
 
     toCollection(): Collection<[K, V]> {
@@ -72,7 +92,7 @@ export class HashMap<K, V> {
     }
 
     hasKey(key: K): boolean {
-        return this._map.hasKey(key);
+        return has(key, this._map);
     }
 
     invert(): HashMap<V, K> {
@@ -85,25 +105,25 @@ export class HashMap<K, V> {
     }
 
     mapValues<V2>(mapper: (pair: [K, V]) => V2): HashMap<K, V2> {
-        return new HashMap(this._map.mapValues((value, key) => mapper([key, value])));
+        return new HashMap(map((value, key) => mapper([key!, value]), this._map));
     }
 
     mapKeys<K2>(_mapper: (pair: [K, V]) => K2): HashMap<K2, V> {
-        const pairs = this._map.stream().map(([key, value]) => {
+        const pairs = this.toPairs().map(([key, value]) => {
             return [_mapper([key, value]), value] as [K2, V];
         });
-        return HashMap.fromPairs(pairs.toArray());
+        return HashMap.fromPairs(pairs);
     }
 
     merge(other: HashMap<K, V>): HashMap<K, V> {
-        return new HashMap(this._map.addEntries(other.toPairs()));
+        return HashMap.fromPairs(this.toPairs().concat(other.toPairs()));
     }
 
     forEach(fn: (pair: readonly [K, V]) => void): void {
-        this._map.forEach(fn);
+        forEach((value, key) => fn([key!, value]), this._map);
     }
 
     toObj(): K extends keyof any ? Record<K, V> : never {
-        return Object.fromEntries(this._map.toArray());
+        return toObject(this._map) as K extends keyof any ? Record<K, V> : never;
     }
 }

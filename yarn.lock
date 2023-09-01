@@ -5832,6 +5832,11 @@ typed-array-length@^1.0.4:
     for-each "^0.3.3"
     is-typed-array "^1.1.9"
 
+typed-immutable-map@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/typed-immutable-map/-/typed-immutable-map-0.1.1.tgz#4f7d67c6afa3daa2eaa09c0afa1b9d8ef35a6045"
+  integrity sha512-kqdpR/oGRyHHjnwRnRfLXu6YUDO9/spIljcbzmMyzgOfNJ5XH436TEWQXkmjhM/CdoclOuVMYgWM1ymrwnY9ng==
+
 typedarray-to-buffer@^3.1.5:
   version "3.1.5"
   resolved "https://registry.yarnpkg.com/typedarray-to-buffer/-/typedarray-to-buffer-3.1.5.tgz#a97ee7a9ff42691b9f783ff1bc5112fe3fca9080"

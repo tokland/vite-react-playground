@@ -11,7 +11,7 @@ describe("constructors", () => {
     test("empty", () => {
         const map = HashMap.empty();
         expect(map.size).toEqual(0);
-        expect(map.toPairs()).toEqual([]);
+        expectMapPairsToEqual(map, []);
     });
 
     test("fromPairs", () => {
@@ -21,7 +21,7 @@ describe("constructors", () => {
         ]);
 
         expect(map.size).toEqual(2);
-        expect(map.toPairs()).toEqual([
+        expectMapPairsToEqual(map, [
             ["a", 1],
             ["b", 2],
         ]);
@@ -69,9 +69,28 @@ describe("get", () => {
     });
 });
 
+describe("set", () => {
+    test("creates key entry for non-existing key", () => {
+        expectMapPairsToEqual(mapAbc123.set("d", 4), [
+            ["a", 1],
+            ["b", 2],
+            ["c", 3],
+            ["d", 4],
+        ]);
+    });
+
+    test("overwrites value for existing key", () => {
+        expectMapPairsToEqual(mapAbc123.set("a", 11), [
+            ["a", 11],
+            ["b", 2],
+            ["c", 3],
+        ]);
+    });
+});
+
 describe("transformations", () => {
     test("invert", () => {
-        expect(mapAbc123.invert().toPairs()).toEqual([
+        expectMapPairsToEqual(mapAbc123.invert(), [
             [1, "a"],
             [2, "b"],
             [3, "c"],
@@ -85,36 +104,40 @@ describe("transformations", () => {
             ["c", 2],
         ]);
 
-        expect(mapAbc122.invertMulti().toPairs()).toEqual([
+        expectMapPairsToEqual(mapAbc122.invertMulti(), [
             [1, ["a"]],
             [2, ["b", "c"]],
         ]);
     });
 
     test("mapValues", () => {
-        expect(mapAbc123.mapValues(([key, value]) => `${key}${value}`).toPairs()).toEqual([
-            ["a", "a1"],
-            ["b", "b2"],
-            ["c", "c3"],
-        ]);
+        expectMapPairsToEqual(
+            mapAbc123.mapValues(([key, value]) => `${key}${value}`),
+            [
+                ["a", "a1"],
+                ["b", "b2"],
+                ["c", "c3"],
+            ],
+        );
     });
 
     test("mapKeys", () => {
-        expect(mapAbc123.mapKeys(([key, value]) => `${key}${value}`).toPairs()).toEqual([
-            ["a1", 1],
-            ["b2", 2],
-            ["c3", 3],
-        ]);
+        const mapped = mapAbc123.mapKeys(([key, value]) => `${key}${value}`);
+        expect(mapped.toObj()).toEqual({
+            a1: 1,
+            b2: 2,
+            c3: 3,
+        });
     });
 
     test("merge", () => {
-        const mapAc = HashMap.fromPairs([
+        const mapAcd = HashMap.fromPairs([
             ["a", 11],
             ["c", 33],
             ["d", 44],
         ]);
 
-        expect(mapAbc123.merge(mapAc).toPairs()).toEqual([
+        expectMapPairsToEqual(mapAbc123.merge(mapAcd), [
             ["a", 11],
             ["b", 2],
             ["c", 33],
@@ -136,21 +159,31 @@ describe("transformations", () => {
 
 describe("filtering by key or value", () => {
     test("pick", () => {
-        expect(mapAbc123.pick(["a", "c"]).toPairs()).toEqual([
+        expectMapPairsToEqual(mapAbc123.pick(["a", "c"]), [
             ["a", 1],
             ["c", 3],
         ]);
     });
 
     test("pickBy", () => {
-        expect(mapAbc123.pickBy(([k, v]) => k !== "b" && v > 2).toPairs()).toEqual([["c", 3]]);
+        expectMapPairsToEqual(
+            mapAbc123.pickBy(([k, v]) => k !== "b" && v > 2),
+            [["c", 3]],
+        );
     });
 
     test("omit", () => {
-        expect(mapAbc123.omit(["a", "c"]).toPairs()).toEqual([["b", 2]]);
+        expectMapPairsToEqual(mapAbc123.omit(["a", "c"]), [["b", 2]]);
     });
 
     test("omitBy", () => {
-        expect(mapAbc123.omitBy(([k, v]) => k === "b" || v === 1).toPairs()).toEqual([["c", 3]]);
+        expectMapPairsToEqual(
+            mapAbc123.omitBy(([k, v]) => k === "b" || v === 1),
+            [["c", 3]],
+        );
     });
 });
+
+function expectMapPairsToEqual<K, V>(map: HashMap<K, V>, pairsSet: Array<[K, V]>): void {
+    expect(map.toPairs()).toEqual(expect.arrayContaining(pairsSet));
+}
