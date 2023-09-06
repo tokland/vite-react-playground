@@ -46,7 +46,7 @@ describe("conversors", () => {
     });
 
     test("toObj", () => {
-        const obj = mapAbc123.toObj();
+        const obj = mapAbc123.toObject();
         expect(obj).toEqual({ a: 1, b: 2, c: 3 });
     });
 });
@@ -123,11 +123,11 @@ describe("transformations", () => {
 
     test("mapKeys", () => {
         const mapped = mapAbc123.mapKeys(([key, value]) => `${key}${value}`);
-        expect(mapped.toObj()).toEqual({
-            a1: 1,
-            b2: 2,
-            c3: 3,
-        });
+        expectMapPairsToEqual(mapped, [
+            ["a1", 1],
+            ["b2", 2],
+            ["c3", 3],
+        ]);
     });
 
     test("merge", () => {

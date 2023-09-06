@@ -12,7 +12,7 @@ interface CounterPageProps {
 
 function CounterPage(props: CounterPageProps): Element {
     const counterId = props.route.params.id;
-    const counter = useAppState(state => state.counters.get({ id: counterId }));
+    const counter = useAppState(state => state.counters.getById(counterId));
     return counter ? <CounterContents counter={counter} /> : <>Loading...</>;
 }
 

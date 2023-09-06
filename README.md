@@ -40,15 +40,15 @@ $ yarn build
 
 ### Introduction
 
-Clean Architecture promotes Dependency Injection, which allows to isolate easily a System Under Test (SUT) from its external dependencies. Two strategies are typically employed:
+Clean Architecture promotes Dependency Injection, so it's easy to isolate a System Under Test (SUT) from its external dependencies. Two strategies are typically employed:
 
-1. Stubs: Fake implementations of the dependencies. Cons: boilerplate; stubs must be created manually and kept up-to-date to changes of the SUT or the dependencies. Also, coding realistic stateful stubs is not trivial, and they may introduce bugs of their own.
+1. Stubs: Fake implementations of the dependencies. Cons: a lot of boilerplate; stubs must be created manually and kept up-to-date to changes of the SUT or the dependencies. Also, coding realistic stateful stubs is not trivial, and they may introduce bugs of their own.
 
-2. Mocks: Instead of writing real implementations, we just define which calls (arguments + result) are expected on the dependencies. It's usually more convenient than writing static stubs, but still tedious to keep them up-to-date with the implementation.
+2. Mocks: Instead of writing real implementations of the depedencies, we just define which calls (arguments + result) are expected. It's usually more convenient than writing static stubs, but still tedious to keep them up-to-date with the implementation.
 
 ## Proposed solution
 
-Auto-generated mocks using file snapshots. On development -and only on creation or update when requested- snapshots are created by performing real calls to the external systems. These snapshots contain all the details of the calls (function + arguments + return value).
+Auto-generated snapshots mocks. On development -and only on creation or on update when requested- snapshots are created by performing real calls to the external systems. The snapshots save the details of the calls (function + arguments + return value).
 
 ### Implementation
 
@@ -62,13 +62,13 @@ Auto-generated mocks using file snapshots. On development -and only on creation 
 
 -   Rollback functions (setup/teardown) are executed only when the snapshots are being updated.
 
--   Snapshots are stored as fully-typed TS files, so changes in the dependencies are easily detectable.
+-   Snapshots are stored as fully-typed TS files, so changes in the types of dependencies will be readily detected.
 
--   The expectation is automatically run after the test run (on teardown).
+-   No need to manually call a expect method at the of the test. The expectation is automatically run after the test run.
 
 ### Infrastructure
 
-We need the ability to _compare_ and _serialize_ any value used in the snapshots (both arguments and return values). As Javascript does not provide this infrastructure out-of-the box, we must define these serializers manually. Serializers for the most common JS data structure are provided, so we'll only have to write them for custom classes of our application. A serializer for a position class type might look like this:
+We need the ability to _compare_ and _serialize_ arguments and return values used in the snapshots. As Javascript does not provide this infrastructure out-of-the box, we must define these serializers manually. Serializers for the most common JS data structure are provided, so we'll only have to write them for custom classes of our application. An example:
 
 ```typescript
 // Entity
@@ -83,7 +83,7 @@ class Position {
 // Serializer
 import { Position } from "./domain/entities";
 
-const posSerializer = serializer<Position>()({
+const positionSerializer = serializer<Position>()({
     hasType: obj => !!obj && obj.constructor === Pos,
     isEqual: (pos1, pos2) => pos1.x === pos1.y && pos2.y === pos2.y,
     modules: { Position },
@@ -108,9 +108,9 @@ test("GetAlbumsUseCase", () => {
 
 ### Bonus: Test fixtures
 
-To write tests, we well need fixtures, testing data of our entities. On complex apps, manually creating and keeping this data up-to-date is time-consuming.
+To write tests, we will need fixtures, testing data of our entities. On complex apps, as it happens with mocks and stubs, manually creating and keeping fixtures up-to-date is time-consuming.
 
-Let's reuse the serialization infrastructure to create fixtures by calling the external systems (typically, repositories) and storing the result as TS files.
+The serialization infrastructure to just created for the mocks can be re-used. We create fixtures by calling to the dependeencies (typically, repositories) and store the result as TS files.
 
 ```typescript
 async function getFixtures() {

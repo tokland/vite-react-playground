@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest";
 import _, { Collection } from "../Collection";
 import { expectTypeOf } from "expect-type";
-import { IndexedSet } from "../IndexedSet";
 
 describe("Collection", () => {
     test("range", () => {
@@ -330,19 +329,4 @@ describe("Collection", () => {
         expect(hashMap.get(2)).toEqual("1");
         expect(hashMap.get(4)).toEqual("2");
     });
-
-    test("toIndexedSet", () => {
-        const objs = [
-            { id: "1", name: "Name1" },
-            { id: "2", name: "Name2" },
-        ];
-        const set = _(objs).toIndexedSet(obj => obj, getId);
-
-        const expectedSet = IndexedSet.fromArray(objs, getId);
-        expect(set.equals(expectedSet)).toBe(true);
-    });
 });
-
-function getId(obj: { id: string }): string {
-    return obj.id;
-}

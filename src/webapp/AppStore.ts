@@ -21,12 +21,12 @@ export class AppActions {
     }
 
     increment(counterId: string) {
-        const counter = this.state.counters.get({ id: counterId });
+        const counter = this.state.counters.getById(counterId);
         return this.saveCounter(counter?.add(+1));
     }
 
     decrement(counterId: string): Cancel {
-        const counter = this.state.counters.get({ id: counterId });
+        const counter = this.state.counters.getById(counterId);
         return this.saveCounter(counter?.add(-1));
     }
 

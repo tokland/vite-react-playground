@@ -1,5 +1,4 @@
 import { HashMap } from "./HashMap";
-import { Hasher, IndexedSet } from "./IndexedSet";
 
 export default function _c<T>(xs: T[]): Collection<T> {
     return Collection.from(xs);
@@ -284,13 +283,6 @@ export class Collection<T> {
     toHashMap<K, V>(toPairFn: (x: T) => [K, V]): HashMap<K, V> {
         const pairs = this.map(toPairFn).toArray();
         return HashMap.fromPairs(pairs);
-    }
-
-    toIndexedSet<THash, T2 extends THash>(
-        mapper: (value: T) => T2,
-        getHash: Hasher<THash>,
-    ): IndexedSet<T2, THash> {
-        return IndexedSet.fromArray<T2, THash>(this.xs.map(mapper), getHash);
     }
 }
 

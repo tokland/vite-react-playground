@@ -1,51 +1,33 @@
 import { Collection } from "./Collection";
-import {
-    HashMap as ImmutableHashMap,
-    empty,
-    fromObject,
-    get,
-    set,
-    has,
-    keys,
-    values,
-    entries,
-    map,
-    filter,
-    fromIterable,
-    forEach,
-    toObject,
-} from "typed-immutable-map";
+import * as tim from "typed-immutable-map";
 
-/* A fast and persistent (immutable) Hash Map.
-
-    Keys can be of any type, including objects or arrays, much like ES2015 Maps.
- */
+/* Immutable Hash Map. Like ES2015 Map, keys can be of any type. */
 
 export class HashMap<K, V> {
+    protected constructor(protected _map: tim.HashMap<K, V>) {}
+
     /* Constructors */
 
-    protected constructor(protected _map: ImmutableHashMap<K, V>) {}
-
     static empty<K, V>() {
-        return new HashMap<K, V>(empty());
+        return new HashMap<K, V>(tim.empty());
     }
 
     static fromPairs<K, V>(pairs: Array<[K, V]>): HashMap<K, V> {
-        return new HashMap(fromIterable(pairs));
+        return new HashMap(tim.fromIterable(pairs));
     }
 
     static fromObject<K extends keyof any, V>(obj: Record<K, V>) {
-        return new HashMap<K, V>(fromObject(obj));
+        return new HashMap<K, V>(tim.fromObject(obj));
     }
 
     /* Methods */
 
     get(key: K): V | undefined {
-        return get(key, this._map);
+        return tim.get(key, this._map);
     }
 
     set(key: K, value: V): HashMap<K, V> {
-        const updated = set(key, value, this._map);
+        const updated = tim.set(key, value, this._map);
         return new HashMap(updated);
     }
 
@@ -56,15 +38,15 @@ export class HashMap<K, V> {
     }
 
     keys(): K[] {
-        return Array.from(keys(this._map));
+        return Array.from(tim.keys(this._map));
     }
 
     values(): V[] {
-        return Array.from(values(this._map));
+        return Array.from(tim.values(this._map));
     }
 
     toPairs(): Array<[K, V]> {
-        return Array.from(entries(this._map));
+        return Array.from(tim.entries(this._map));
     }
 
     get size(): number {
@@ -76,7 +58,7 @@ export class HashMap<K, V> {
     }
 
     pickBy(pred: (pair: readonly [K, V]) => boolean): HashMap<K, V> {
-        return new HashMap(filter((value, key) => pred([key!, value]), this._map));
+        return new HashMap(tim.filter((value, key) => pred([key!, value]), this._map));
     }
 
     omit(keys: K[]): HashMap<K, V> {
@@ -92,7 +74,7 @@ export class HashMap<K, V> {
     }
 
     hasKey(key: K): boolean {
-        return has(key, this._map);
+        return tim.has(key, this._map);
     }
 
     invert(): HashMap<V, K> {
@@ -105,7 +87,7 @@ export class HashMap<K, V> {
     }
 
     mapValues<V2>(mapper: (pair: [K, V]) => V2): HashMap<K, V2> {
-        return new HashMap(map((value, key) => mapper([key!, value]), this._map));
+        return new HashMap(tim.map((value, key) => mapper([key!, value]), this._map));
     }
 
     mapKeys<K2>(_mapper: (pair: [K, V]) => K2): HashMap<K2, V> {
@@ -120,10 +102,10 @@ export class HashMap<K, V> {
     }
 
     forEach(fn: (pair: readonly [K, V]) => void): void {
-        forEach((value, key) => fn([key!, value]), this._map);
+        tim.forEach((value, key) => fn([key!, value]), this._map);
     }
 
-    toObj(): K extends keyof any ? Record<K, V> : never {
-        return toObject(this._map) as K extends keyof any ? Record<K, V> : never;
+    toObject(): K extends keyof any ? Record<K, V> : Record<string, V> {
+        return tim.toObject(this._map) as K extends keyof any ? Record<K, V> : Record<string, V>;
     }
 }

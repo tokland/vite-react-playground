@@ -1,20 +1,19 @@
-import { getId, Ref } from "./Base";
+import { Id } from "./Base";
 import { Counter } from "./Counter";
-import { IndexedSet } from "./generic/IndexedSet";
+import { HashMap } from "./generic/HashMap";
 
 export class Counters {
-    constructor(private set: IndexedSet<Counter, Ref>) {}
+    constructor(private map: HashMap<Id, Counter>) {}
 
     static empty(): Counters {
-        const set = IndexedSet.fromArray<Counter, Ref>([], getId);
-        return new Counters(set);
+        return new Counters(HashMap.empty());
     }
 
-    get(ref: Ref): Counter | undefined {
-        return this.set.get(ref);
+    getById(id: Id): Counter | undefined {
+        return this.map.get(id);
     }
 
     update(counter: Counter): Counters {
-        return new Counters(this.set.update(counter));
+        return new Counters(this.map.set(counter.id, counter));
     }
 }
