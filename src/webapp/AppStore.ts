@@ -16,7 +16,7 @@ export class AppActions {
         private compositionRoot: CompositionRoot,
     ) {}
 
-    get state() {
+    private get state() {
         return this.get();
     }
 

@@ -2,13 +2,18 @@ import { Rec } from "../Rec";
 import { expectTypeOf } from "expect-type";
 
 const rec1 = Rec.from({ x: 1, s: "hello", n: null });
-const rec2 = Rec.from({ x: 2, n: true, z: 123 });
 
 describe("Rec", () => {
     test("keys", () => {
         const keys = rec1.keys();
         expectTypeOf(keys).toEqualTypeOf<Array<"x" | "s" | "n">>();
         expect(keys).toEqual(["x", "s", "n"]);
+    });
+
+    test("values", () => {
+        const values = rec1.values();
+        expectTypeOf(values).toEqualTypeOf<Array<number | string | null>>();
+        expect(values).toEqual([1, "hello", null]);
     });
 
     test("pick", () => {
@@ -28,10 +33,11 @@ describe("Rec", () => {
     test("omitBy", () => {
         expect(rec1.omitBy(key => key === "x").toObject()).toEqual({ s: "hello", n: null });
     });
-});
 
-test("merge", () => {
-    const merged = rec1.merge(rec2);
-    expectTypeOf(merged).toEqualTypeOf<Rec<{ x: number; s: string; n: boolean; z: number }>>();
-    expect(merged.toObject()).toEqual({ x: 2, s: "hello", n: true, z: 123 });
+    test("merge", () => {
+        const rec2 = Rec.from({ n: true, z: 123 });
+        const merged = rec1.merge(rec2);
+        expectTypeOf(merged).toEqualTypeOf<Rec<{ x: number; s: string; n: boolean; z: number }>>();
+        expect(merged.toObject()).toEqual({ x: 1, s: "hello", n: true, z: 123 });
+    });
 });

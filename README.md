@@ -130,8 +130,8 @@ Generates:
 ```typescript
 const fixtures = {
     counter: {
-        id1: _modules.Counter.create({ id: "1", value: 0 }),
-        id2: _modules.Counter.create({ id: "2", value: 0 }),
+        id1: modules.Counter.create({ id: "1", value: 1 }),
+        id2: modules.Counter.create({ id: "2", value: 2 }),
     },
 };
 ```

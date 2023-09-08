@@ -39,7 +39,7 @@ function _getJSON<U>(url: string): Async<U> {
         fetch(url, { method: "get", signal: abortController.signal })
             .then(res => res.json() as U)
             .then(resolve)
-            .catch(reject);
+            .catch(err => reject((err && err.message) || "Unknown error"));
 
         return () => abortController.abort();
     });

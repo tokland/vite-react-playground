@@ -13,6 +13,10 @@ export class Rec<T extends BaseObj> {
         return Object.keys(this.obj) as Array<keyof T>;
     }
 
+    values(): Array<T[keyof T]> {
+        return Object.values(this.obj) as Array<T[keyof T]>;
+    }
+
     toObject(): T {
         return this.obj;
     }
@@ -43,4 +47,4 @@ export class Rec<T extends BaseObj> {
 
 type Merge<T1, T2> = Omit<T1, keyof T2> & T2;
 
-type BaseObj = Record<keyof any, unknown>;
+type BaseObj = Record<string, unknown>;
