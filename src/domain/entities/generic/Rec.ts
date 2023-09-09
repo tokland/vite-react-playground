@@ -1,9 +1,5 @@
 export class Rec<T extends BaseObj> {
-    protected obj: T;
-
-    protected constructor(obj: T) {
-        this.obj = obj;
-    }
+    protected constructor(protected obj: T) {}
 
     static from<T extends BaseObj>(obj: T): Rec<T> {
         return new Rec(obj);
@@ -21,18 +17,18 @@ export class Rec<T extends BaseObj> {
         return this.obj;
     }
 
-    pickBy(filter: (key: keyof T) => boolean): Rec<Partial<T>> {
-        const pairs = Object.entries(this.obj);
-        const filtered = Object.fromEntries(pairs.filter(([k, _v]) => filter(k as keyof T)));
-        return new Rec(filtered) as unknown as Rec<Partial<T>>;
-    }
-
     pick<K extends keyof T>(keys: K[]): Rec<Pick<T, K>> {
         return this.pickBy(key => keys.includes(key as K)) as unknown as Rec<Pick<T, K>>;
     }
 
     omit<K extends keyof T>(keys: K[]): Rec<Omit<T, K>> {
         return this.pickBy(key => !keys.includes(key as K)) as unknown as Rec<Omit<T, K>>;
+    }
+
+    pickBy(filter: (key: keyof T) => boolean): Rec<Partial<T>> {
+        const pairs = Object.entries(this.obj);
+        const filtered = Object.fromEntries(pairs.filter(([k, _v]) => filter(k as keyof T)));
+        return new Rec(filtered) as unknown as Rec<Partial<T>>;
     }
 
     omitBy(filter: (key: keyof T) => boolean): Rec<Partial<T>> {

@@ -1,7 +1,7 @@
 import { buildStore, GetState, SetState } from "./hooks/GenericStore";
 import { AppRoute } from "./routes";
 import { CompositionRoot } from "../compositionRoot";
-import { Cancel, noCancel } from "../domain/entities/generic/Async";
+import { Cancel } from "../domain/entities/generic/Async";
 import { Maybe } from "../domain/utils/ts-utils";
 import * as entities from "../domain/entities";
 
@@ -41,7 +41,7 @@ export class AppActions {
     }
 
     private saveCounter(counter: Maybe<entities.Counter>): Cancel {
-        if (!counter) return noCancel;
+        if (!counter) return;
 
         this.set(state => ({ counters: state.counters.update(counter) }));
 

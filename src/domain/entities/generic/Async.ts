@@ -26,7 +26,7 @@ export class Async<T> {
                 cancel = computation(resolve, message => reject(new AsyncError(message)));
             });
 
-            return new CancellablePromise(promise, cancel);
+            return new CancellablePromise(promise, cancel || (() => {}));
         });
     }
 
@@ -137,9 +137,7 @@ export class AsyncError extends Error {
     type = "asyncError";
 }
 
-export type Cancel = () => void;
-
-export const noCancel: Cancel = () => {};
+export type Cancel = (() => void) | undefined;
 
 function buildError(message: string): AsyncError {
     return new AsyncError(message);

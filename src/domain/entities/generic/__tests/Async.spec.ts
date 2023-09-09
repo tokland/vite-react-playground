@@ -146,7 +146,7 @@ describe("cancel", () => {
         const reject = vi.fn();
 
         const cancel = Async.sleep(1).run(success, reject);
-        cancel();
+        cancel?.();
         await nextTick();
 
         expect(success).not.toHaveBeenCalled();
