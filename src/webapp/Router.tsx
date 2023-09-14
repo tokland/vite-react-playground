@@ -5,7 +5,7 @@ import { Element } from "./utils/react";
 import HomePage from "./pages/HomePage";
 import CounterPage from "./pages/CounterPage";
 
-const _viteExample1 = import.meta.env.VITE_EXAMPLE1;
+const exampleOfEnvVarUsage = import.meta.env.VITE_EXAMPLE1;
 
 function Router(): Element {
     const route = useRoute();
