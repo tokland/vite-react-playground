@@ -1,23 +1,23 @@
 import * as rcpromise from "real-cancellable-promise";
 
-export class Async<T, E> {
-    private constructor(private _promise: () => rcpromise.CancellablePromise<T>) {}
+export class Async<E, D> {
+    private constructor(private _promise: () => rcpromise.CancellablePromise<D>) {}
 
-    static success<T, E>(data: T): Async<T, E> {
+    static success<E, D>(data: D): Async<E, D> {
         return new Async(() => rcpromise.CancellablePromise.resolve(data));
     }
 
-    static error<T, E>(error: E): Async<T, E> {
+    static error<E, D>(error: E): Async<E, D> {
         return new Async(() => rcpromise.CancellablePromise.reject(error));
     }
 
-    static fromComputation<T, E>(
-        computation: (resolve: (value: T) => void, reject: (error: E) => void) => Cancel,
-    ): Async<T, E> {
+    static fromComputation<E, D>(
+        computation: (resolve: (value: D) => void, reject: (error: E) => void) => Cancel,
+    ): Async<E, D> {
         let cancel: Cancel = () => {};
 
         return new Async(() => {
-            const promise = new Promise<T>((resolve, reject) => {
+            const promise = new Promise<D>((resolve, reject) => {
                 cancel = computation(resolve, error => reject(error));
             });
 
@@ -25,7 +25,7 @@ export class Async<T, E> {
         });
     }
 
-    run(onSuccess: (data: T) => void, onError: (error: E) => void): Cancel {
+    run(onSuccess: (data: D) => void, onError: (error: E) => void): Cancel {
         return this._promise().then(onSuccess, err => {
             if (err instanceof rcpromise.Cancellation) {
                 // no-op
@@ -35,11 +35,11 @@ export class Async<T, E> {
         }).cancel;
     }
 
-    map<U, E>(fn: (data: T) => U): Async<U, E> {
+    map<U>(fn: (data: D) => U): Async<E, U> {
         return new Async(() => this._promise().then(fn));
     }
 
-    mapError<E2>(fn: (error: E) => E2): Async<T, E2> {
+    mapError<E2>(fn: (error: E) => E2): Async<E, D> {
         return new Async(() =>
             this._promise().catch((error: E) => {
                 throw fn(error);
@@ -47,28 +47,28 @@ export class Async<T, E> {
         );
     }
 
-    flatMap<U, E>(fn: (data: T) => Async<U, E>): Async<U, E> {
+    flatMap<U, E>(fn: (data: D) => Async<U, E>): Async<U, E> {
         return new Async(() => this._promise().then(data => fn(data)._promise()));
     }
 
-    chain<U, E>(fn: (data: T) => Async<U, E>): Async<U, E> {
+    chain<U, E>(fn: (data: D) => Async<U, E>): Async<U, E> {
         return this.flatMap(fn);
     }
 
-    toPromise(): Promise<T> {
+    toPromise(): Promise<D> {
         return this._promise();
     }
 
-    static join2<T, S, E>(async1: Async<T, E>, async2: Async<S, E>): Async<[T, S], E> {
+    static join2<E, T, S>(async1: Async<E, T>, async2: Async<E, S>): Async<E, [T, S]> {
         return new Async(() => {
             return rcpromise.CancellablePromise.all<T, S>([async1._promise(), async2._promise()]);
         });
     }
 
-    static joinObj<Obj extends Record<string, Async<any, any>>, E>(
+    static joinObj<E, Obj extends Record<string, Async<any, any>>>(
         obj: Obj,
         options: ParallelOptions = { concurrency: 1 },
-    ): Async<{ [K in keyof Obj]: Obj[K] extends Async<infer U, infer E> ? U : never }, E> {
+    ): Async<E, { [K in keyof Obj]: Obj[K] extends Async<infer E, infer U> ? U : never }> {
         const asyncs = Object.values(obj);
 
         return Async.parallel(asyncs, options).map(values => {
@@ -78,9 +78,9 @@ export class Async<T, E> {
         });
     }
 
-    static sequential<T, E>(asyncs: Async<T, E>[]): Async<T[], E> {
+    static sequential<E, D>(asyncs: Async<E, D>[]): Async<E, D[]> {
         return Async.block(async $ => {
-            const output: T[] = [];
+            const output: D[] = [];
             for (const async of asyncs) {
                 const res = await $(async);
                 output.push(res);
@@ -89,11 +89,11 @@ export class Async<T, E> {
         });
     }
 
-    static parallel<T, E>(asyncs: Async<T, E>[], options: ParallelOptions): Async<T[], E> {
+    static parallel<E, D>(asyncs: Async<E, D>[], options: ParallelOptions): Async<E, D[]> {
         return new Async(() =>
             rcpromise.buildCancellablePromise(async $ => {
                 const queue: rcpromise.CancellablePromise<void>[] = [];
-                const output: T[] = new Array(asyncs.length);
+                const output: D[] = new Array(asyncs.length);
 
                 for (const [idx, async] of asyncs.entries()) {
                     const queueItem$ = async._promise().then(res => {
@@ -113,7 +113,7 @@ export class Async<T, E> {
         );
     }
 
-    static sleep(ms: number): Async<number, unknown> {
+    static sleep(ms: number): Async<unknown, number> {
         return new Async(() => rcpromise.CancellablePromise.delay(ms)).map(() => ms);
     }
 
@@ -121,15 +121,15 @@ export class Async<T, E> {
         return Async.success(undefined);
     }
 
-    static block<U, E>(blockFn: (captureAsync: CaptureAsync<E>) => Promise<U>): Async<U, E> {
+    static block<E, U>(blockFn: (captureAsync: CaptureAsync<E>) => Promise<U>): Async<E, U> {
         return new Async((): rcpromise.CancellablePromise<U> => {
             return rcpromise.buildCancellablePromise(capturePromise => {
                 const captureAsync: CaptureAsync<E> = async => {
                     return capturePromise(async._promise());
                 };
 
-                captureAsync.error = function <T>(error: E) {
-                    return capturePromise(rcpromise.CancellablePromise.reject(error)) as Promise<T>;
+                captureAsync.error = function <D>(error: E) {
+                    return capturePromise(rcpromise.CancellablePromise.reject(error)) as Promise<D>;
                 };
 
                 return blockFn(captureAsync);
@@ -141,13 +141,13 @@ export class Async<T, E> {
 export type Cancel = (() => void) | undefined;
 
 interface CaptureAsync<E> {
-    <T>(async: Async<T, E>): Promise<T>;
-    error: <T>(error: E) => Promise<T>;
+    <D>(async: Async<E, D>): Promise<D>;
+    error: <D>(error: E) => Promise<D>;
 }
 
 type ParallelOptions = { concurrency: number };
 
-export function getJSON2<U>(url: string): Async<U, TypeError | SyntaxError> {
+export function getJSON2<U>(url: string): Async<TypeError | SyntaxError, U> {
     const abortController = new AbortController();
 
     return Async.fromComputation((resolve, reject) => {

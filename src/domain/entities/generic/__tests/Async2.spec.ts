@@ -5,7 +5,7 @@ describe("Basic builders", () => {
     test("Async.success", async () => {
         const value$ = Async.success(10);
 
-        expectTypeOf(value$).toEqualTypeOf<Async<number, unknown>>();
+        expectTypeOf(value$).toEqualTypeOf<Async<unknown, number>>();
         await expectAsync(value$, { toEqual: 10 });
     });
 
@@ -13,7 +13,7 @@ describe("Basic builders", () => {
         const error = new CodedError("message: Error 1", { code: "E001" });
         const value$ = Async.error(error);
 
-        expectTypeOf(value$).toEqualTypeOf<Async<unknown, CodedError>>();
+        expectTypeOf(value$).toEqualTypeOf<Async<CodedError, unknown>>();
         await expectAsync(value$, { toThrow: error });
     });
 });
@@ -106,9 +106,9 @@ describe("Async.block", () => {
 
     describe("when any the awaited values in the block is an error", () => {
         it("returns that error as the async result", async () => {
-            const result$ = Async.block<number, string>(async $ => {
+            const result$ = Async.block<string, number>(async $ => {
                 const value1 = await $(Async.success(1));
-                const value2 = await $(Async.error("message") as Async<number, string>);
+                const value2 = await $(Async.error("message") as Async<string, number>);
                 const value3 = await $(Async.success(3));
                 return value1 + value2 + value3;
             });
@@ -119,7 +119,7 @@ describe("Async.block", () => {
 
     describe("when the helper $.error is called", () => {
         it("returns that async error as the async result", async () => {
-            const result$ = Async.block<number, string>(async $ => {
+            const result$ = Async.block<string, number>(async $ => {
                 if (parseInt("2") > 1) return $.error("message");
                 return $(Async.success(1));
             });
