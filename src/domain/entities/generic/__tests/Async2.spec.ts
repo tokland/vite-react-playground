@@ -117,6 +117,19 @@ describe("Async.block", () => {
         });
     });
 
+    describe("when any the awaited values in the block is an error", () => {
+        it("returns that error as the async result", async () => {
+            const result$ = Async.block_<string>()(async $ => {
+                const value1 = await $(Async.success(1));
+                const value2 = await $(Async.error<string, number>("message"));
+                const value3 = await $(Async.success(3));
+                return value1 + value2 + value3;
+            });
+
+            await expect(result$.toPromise()).rejects.toThrow("message");
+        });
+    });
+
     describe("when the helper $.error is called", () => {
         it("returns that async error as the async result", async () => {
             const result$ = Async.block<string, number>(async $ => {

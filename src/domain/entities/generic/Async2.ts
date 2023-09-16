@@ -121,7 +121,7 @@ export class Async<E, D> {
         return Async.success(undefined);
     }
 
-    static block<E, U>(blockFn: (captureAsync: CaptureAsync<E>) => Promise<U>): Async<E, U> {
+    static block<E, U>(blockFn: (capture: CaptureAsync<E>) => Promise<U>): Async<E, U> {
         return new Async((): rcpromise.CancellablePromise<U> => {
             return rcpromise.buildCancellablePromise(capturePromise => {
                 const captureAsync: CaptureAsync<E> = async => {
@@ -135,6 +135,12 @@ export class Async<E, D> {
                 return blockFn(captureAsync);
             });
         });
+    }
+
+    static block_<E>() {
+        return function <U>(blockFn: (capture: CaptureAsync<E>) => Promise<U>): Async<E, U> {
+            return Async.block<E, U>(blockFn);
+        };
     }
 }
 
