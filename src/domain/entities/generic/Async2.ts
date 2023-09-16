@@ -147,18 +147,22 @@ interface CaptureAsync<E> {
 
 type ParallelOptions = { concurrency: number };
 
-export function getJSON2<U>(url: string): Async<U, Error | TypeError | SyntaxError> {
+export function getJSON2<U>(url: string): Async<U, TypeError | SyntaxError> {
     const abortController = new AbortController();
 
     return Async.fromComputation((resolve, reject) => {
+        // exceptions: TypeError | AbortError(DOMException)
         fetch(url, { method: "get", signal: abortController.signal })
-            .then(res => res.json() as U)
+            .then(res => res.json() as U) // exceptions: SyntaxError
             .then(data => resolve(data))
             .catch((error: unknown) => {
                 if (error instanceof TypeError || error instanceof SyntaxError) {
                     reject(error);
+                }
+                if (error instanceof DOMException) {
+                    // no-op
                 } else {
-                    reject(new Error("Unknown error"));
+                    reject(new TypeError("Unknown error"));
                 }
             });
 
