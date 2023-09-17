@@ -73,6 +73,7 @@ describe("Transformation", () => {
     test("mapError", async () => {
         const value1$ = Async.error(1);
         const value2$ = value1$.mapError(x => x.toString());
+        expectTypeOf(value2$).toEqualTypeOf<Async<string, unknown>>();
 
         await expectAsync(value2$, { toThrow: "1" });
     });
@@ -95,9 +96,9 @@ describe("Async.block", () => {
         it("returns the returned value as an async", async () => {
             const result$ = Async.block(async $ => {
                 const value1 = await $(Async.success(1));
-                const value2 = await $(Async.success(2));
+                const value2 = await $(Async.success("2"));
                 const value3 = await $(Async.success(3));
-                return value1 + value2 + value3;
+                return value1 + parseInt(value2) + value3;
             });
 
             await expect(result$.toPromise()).resolves.toEqual(6);
@@ -121,7 +122,7 @@ describe("Async.block", () => {
         it("returns that error as the async result", async () => {
             const result$ = Async.block_<string>()(async $ => {
                 const value1 = await $(Async.success(1));
-                const value2 = await $(Async.error<string, number>("message"));
+                const value2 = await $(Async.error("message") as Async<string, number>);
                 const value3 = await $(Async.success(3));
                 return value1 + value2 + value3;
             });
@@ -132,12 +133,17 @@ describe("Async.block", () => {
 
     describe("when the helper $.error is called", () => {
         it("returns that async error as the async result", async () => {
-            const result$ = Async.block<string, number>(async $ => {
-                if (parseInt("2") > 1) return $.error("message");
-                return $(Async.success(1));
+            const value1 = 1;
+            const double = vi.fn((x: number) => x);
+
+            const result$ = Async.block_<Error>()(async $ => {
+                if (value1 > 0) $.throw(new Error("message"));
+                const value = await $(Async.success(double(1)));
+                return value;
             });
 
-            expect(result$.toPromise()).rejects.toThrow("message");
+            await expectAsync(result$, { toThrow: new Error("message") });
+            expect(double).not.toHaveBeenCalled();
         });
     });
 });
@@ -183,12 +189,16 @@ describe("cancel", () => {
 describe("join2", () => {
     it("returns a single async with the pair of values", async () => {
         const join$ = Async.join2(Async.success(123), Async.success("hello"));
-        await expect(join$.toPromise()).resolves.toEqual([123, "hello"]);
+
+        expectTypeOf(join$).toEqualTypeOf<Async<unknown, [number, string]>>();
+        await expectAsync(join$, { toEqual: [123, "hello"] });
     });
 
     it("returns an error if some of the inputs is an error", async () => {
         const join$ = Async.join2(Async.success(123), Async.error("Some error"));
-        await expect(join$.toPromise()).rejects.toThrow("Some error");
+
+        expectTypeOf(join$).toEqualTypeOf<Async<unknown, [number, unknown]>>();
+        await expectAsync(join$, { toThrow: "Some error" });
     });
 });
 
@@ -199,19 +209,19 @@ describe("joinObj", () => {
             s: Async.success("hello"),
         });
 
-        await expect(join$.toPromise()).resolves.toEqual({
-            n: 123,
-            s: "hello",
+        await expectAsync(join$, {
+            toEqual: { n: 123, s: "hello" },
         });
     });
 
     it("returns an error if some of the inputs is an error", async () => {
         const join$ = Async.joinObj({
-            n: Async.success(123),
-            s: Async.error("Some error"),
+            n: Async.success(123) as Async<string, number>,
+            s: Async.error("Some error") as Async<string, {}>,
         });
+        expectTypeOf(join$).toEqualTypeOf<Async<string, { n: number; s: {} }>>();
 
-        await expect(join$.toPromise()).rejects.toThrow("Some error");
+        await expectAsync(join$, { toThrow: "Some error" });
     });
 });
 
@@ -240,8 +250,8 @@ function nextTick() {
     return new Promise(process.nextTick);
 }
 
-async function expectAsync<D, E>(
-    value$: Async<D, E>,
+async function expectAsync<E, D>(
+    value$: Async<E, D>,
     options: { toEqual: D; toThrow?: undefined } | { toEqual?: undefined; toThrow: E },
 ): Promise<void> {
     if (options.toEqual) {

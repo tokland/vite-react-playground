@@ -39,7 +39,7 @@ export class Async<E, D> {
         return new Async(() => this._promise().then(fn));
     }
 
-    mapError<E2>(fn: (error: E) => E2): Async<E, D> {
+    mapError<E2>(fn: (error: E) => E2): Async<E2, D> {
         return new Async(() =>
             this._promise().catch((error: E) => {
                 throw fn(error);
@@ -68,7 +68,10 @@ export class Async<E, D> {
     static joinObj<E, Obj extends Record<string, Async<any, any>>>(
         obj: Obj,
         options: ParallelOptions = { concurrency: 1 },
-    ): Async<E, { [K in keyof Obj]: Obj[K] extends Async<infer E, infer U> ? U : never }> {
+    ): Async<
+        Obj[keyof Obj] extends Async<infer E, any> ? E : never,
+        { [K in keyof Obj]: Obj[K] extends Async<any, infer U> ? U : never }
+    > {
         const asyncs = Object.values(obj);
 
         return Async.parallel(asyncs, options).map(values => {
@@ -113,7 +116,7 @@ export class Async<E, D> {
         );
     }
 
-    static sleep(ms: number): Async<unknown, number> {
+    static sleep(ms: number): Async<any, number> {
         return new Async(() => rcpromise.CancellablePromise.delay(ms)).map(() => ms);
     }
 
@@ -128,8 +131,8 @@ export class Async<E, D> {
                     return capturePromise(async._promise());
                 };
 
-                captureAsync.error = function <D>(error: E) {
-                    return capturePromise(rcpromise.CancellablePromise.reject(error)) as Promise<D>;
+                captureAsync.throw = function <D>(error: E) {
+                    throw error;
                 };
 
                 return blockFn(captureAsync);
@@ -148,7 +151,7 @@ export type Cancel = (() => void) | undefined;
 
 interface CaptureAsync<E> {
     <D>(async: Async<E, D>): Promise<D>;
-    error: <D>(error: E) => Promise<D>;
+    throw: (error: E) => never;
 }
 
 type ParallelOptions = { concurrency: number };
