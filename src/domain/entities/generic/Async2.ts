@@ -1,4 +1,5 @@
 import * as rcpromise from "real-cancellable-promise";
+import { Cancellation } from "real-cancellable-promise";
 
 export class Async<E, D> {
     private constructor(private _promise: () => rcpromise.CancellablePromise<D>) {}
@@ -120,7 +121,7 @@ export class Async<E, D> {
         return new Async(() => rcpromise.CancellablePromise.delay(ms)).map(() => ms);
     }
 
-    static void(): Async<void, unknown> {
+    static void(): Async<unknown, undefined> {
         return Async.success(undefined);
     }
 
@@ -160,16 +161,20 @@ export function getJSON2<U>(url: string): Async<TypeError | SyntaxError, U> {
     const abortController = new AbortController();
 
     return Async.fromComputation((resolve, reject) => {
-        // exceptions: TypeError | AbortError(DOMException)
+        // exceptions: TypeError | DOMException[name=AbortError]
         fetch(url, { method: "get", signal: abortController.signal })
             .then(res => res.json() as U) // exceptions: SyntaxError
             .then(data => resolve(data))
             .catch((error: unknown) => {
-                if (error instanceof TypeError || error instanceof SyntaxError) {
+                if (
+                    error &&
+                    typeof error === "object" &&
+                    "name" in error &&
+                    error.name === "AbortError"
+                ) {
+                    throw new Cancellation();
+                } else if (error instanceof TypeError || error instanceof SyntaxError) {
                     reject(error);
-                }
-                if (error instanceof DOMException) {
-                    // no-op
                 } else {
                     reject(new TypeError("Unknown error"));
                 }

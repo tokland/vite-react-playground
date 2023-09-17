@@ -47,22 +47,28 @@ describe("run", () => {
 });
 
 describe("toPromise", () => {
-    it("convert an Async to promise", async () => {
+    it("converts a successful Async to promise", async () => {
         await expect(Async.success(1).toPromise()).resolves.toEqual(1);
+    });
+
+    it("converts an error Async to promise", async () => {
+        await expect(Async.error(new Error("message")).toPromise()).rejects.toThrow(
+            new Error("message"),
+        );
     });
 });
 
 describe("helpers", () => {
     test("Async.sleep", async () => {
-        await expect(Async.sleep(1).toPromise()).resolves.toEqual(1);
+        await expectAsync(Async.sleep(1), { toEqual: 1 });
     });
 
     test("Async.void", async () => {
-        await expect(Async.void().toPromise()).resolves.toBeUndefined();
+        await expectAsync(Async.void(), { toEqual: undefined });
     });
 });
 
-describe("Transformation", () => {
+describe("Transformations", () => {
     test("map", async () => {
         const value1$ = Async.success(1);
         const value2$ = value1$.map(x => x.toString());
@@ -80,13 +86,12 @@ describe("Transformation", () => {
 
     describe("flatMap/chain", () => {
         it("builds an async value mapping to another async", async () => {
-            const value1$ = Async.success(1);
-            const value2$ = value1$
-                .flatMap(value => Async.success(value + 2))
-                .chain(value => Async.success(value + 3))
+            const value$ = Async.success(1)
+                .chain(value => Async.success(value + 2))
+                .flatMap(value => Async.success(value + 3))
                 .flatMap(value => Async.success(value + 4));
 
-            await expectAsync(value2$, { toEqual: 10 });
+            await expectAsync(value$, { toEqual: 10 });
         });
     });
 });
@@ -101,7 +106,7 @@ describe("Async.block", () => {
                 return value1 + parseInt(value2) + value3;
             });
 
-            await expect(result$.toPromise()).resolves.toEqual(6);
+            await expectAsync(result$, { toEqual: 6 });
         });
     });
 
@@ -114,7 +119,7 @@ describe("Async.block", () => {
                 return value1 + value2 + value3;
             });
 
-            await expect(result$.toPromise()).rejects.toThrow("message");
+            await expectAsync(result$, { toThrow: "message" });
         });
     });
 
@@ -127,7 +132,7 @@ describe("Async.block", () => {
                 return value1 + value2 + value3;
             });
 
-            await expect(result$.toPromise()).rejects.toThrow("message");
+            await expectAsync(result$, { toThrow: "message" });
         });
     });
 
@@ -156,7 +161,7 @@ describe("fromComputation", () => {
                 return () => {};
             });
 
-            await expect(value$.toPromise()).resolves.toEqual(1);
+            await expectAsync(value$, { toEqual: 1 });
         });
     });
 
@@ -167,7 +172,7 @@ describe("fromComputation", () => {
                 return () => {};
             });
 
-            await expect(value$.toPromise()).rejects.toThrow("message");
+            await expectAsync(value$, { toThrow: "message" });
         });
     });
 });
@@ -228,7 +233,7 @@ describe("joinObj", () => {
 describe("sequential", () => {
     it("returns an async containing all the values as an array", async () => {
         const values$ = Async.sequential([Async.success(1), Async.success(2), Async.success(3)]);
-        await expect(values$.toPromise()).resolves.toEqual([1, 2, 3]);
+        await expectAsync(values$, { toEqual: [1, 2, 3] });
     });
 });
 
@@ -236,13 +241,13 @@ describe("parallel", async () => {
     test("concurrency smaller than length", async () => {
         const asyncs = [Async.sleep(3), Async.sleep(1), Async.sleep(2)];
         const values$ = Async.parallel(asyncs, { concurrency: 2 });
-        await expect(values$.toPromise()).resolves.toEqual([3, 1, 2]);
+        await expectAsync(values$, { toEqual: [3, 1, 2] });
     });
 
     test("concurrency larger than length", async () => {
         const asyncs = [Async.sleep(3), Async.sleep(1), Async.sleep(2)];
         const values$ = Async.parallel(asyncs, { concurrency: 4 });
-        await expect(values$.toPromise()).resolves.toEqual([3, 1, 2]);
+        await expectAsync(values$, { toEqual: [3, 1, 2] });
     });
 });
 
@@ -254,7 +259,7 @@ async function expectAsync<E, D>(
     value$: Async<E, D>,
     options: { toEqual: D; toThrow?: undefined } | { toEqual?: undefined; toThrow: E },
 ): Promise<void> {
-    if (options.toEqual) {
+    if ("toEqual" in options) {
         await expect(value$.toPromise()).resolves.toEqual(options.toEqual);
     } else {
         await expect(value$.toPromise()).rejects.toMatchObject(options.toThrow as any);
